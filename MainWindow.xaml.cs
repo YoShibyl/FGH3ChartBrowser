@@ -17,6 +17,15 @@ using Microsoft.Extensions.Configuration;
 using System.Runtime.InteropServices;
 using System.Windows.Controls.Primitives;
 using System.Text.RegularExpressions;
+using SngParser;
+using System.Drawing;
+using System.Windows.Interop;
+using System.Drawing.Imaging;
+using System.IO.Pipes;
+using System.Drawing.Drawing2D;
+using Microsoft.VisualBasic;
+using SysConfig = System.Configuration;
+using System.Collections.Specialized;
 
 namespace FGH3ChartBrowser
 {
@@ -30,9 +39,9 @@ namespace FGH3ChartBrowser
         public int totalSongs;
         public int scannedSongs;
         public int scanProgress;
-        public Progress<int> progress;
-
         public BackgroundWorker bgWorker;
+        public string currentLoadingPhrase;
+        public SysConfig.Configuration config;
 
         public MainWindow()
         {
@@ -41,9 +50,24 @@ namespace FGH3ChartBrowser
             InitializeComponent();
             totalSongs = 0;
             scannedSongs = 0;
-            progress = new Progress<int>(x => ScanProgressBar.Value = x);
             SongsDataGrid.ItemsSource = songList;
             bgWorker = new BackgroundWorker();
+            Thread.Sleep(10);
+            LoadConfig();
+        }
+
+        private void LoadConfig()
+        {
+            config = SysConfig.ConfigurationManager.OpenExeConfiguration(SysConfig.ConfigurationUserLevel.None);
+            FGH3_Path_TxtBox.Text = config.AppSettings.Settings["fastgh3_exe_location"].Value;
+            if (String.IsNullOrEmpty(FGH3_Path_TxtBox.Text))
+            {
+                FGH3_Path_TxtBox.Text = @"C:\Program Files (x86)\FastGH3\FastGH3.exe";
+                config.AppSettings.Settings["fastgh3_exe_location"].Value = @"C:\Program Files (x86)\FastGH3\FastGH3.exe";
+                config.Save();
+            }
+            scanFolder = config.AppSettings.Settings["charts_folder"].Value;
+            Chart_Folder_TxtBox.Text = scanFolder;
         }
 
         private void GH3PathBrowseBtn_Click(object sender, RoutedEventArgs e)
@@ -61,6 +85,8 @@ namespace FGH3ChartBrowser
             {
                 string filename = dlg.FileName;
                 FGH3_Path_TxtBox.Text = filename;
+                config.AppSettings.Settings["fastgh3_exe_location"].Value = filename;
+                config.Save();
             }
         }
 
@@ -72,8 +98,9 @@ namespace FGH3ChartBrowser
             {
                 IEnumerable<string> charts = Directory.EnumerateFiles(searchPath, "notes.chart", SearchOption.AllDirectories);
                 IEnumerable<string> midis = Directory.EnumerateFiles(searchPath, "notes.mid", SearchOption.AllDirectories);
+                IEnumerable<string> sngs = Directory.EnumerateFiles(searchPath, "*.sng", SearchOption.AllDirectories);
                 // TO DO: implement a better way of counting songs?
-                totalSongs = charts.Count<string>() + midis.Count<string>();
+                totalSongs = charts.Count<string>() + midis.Count<string>() + sngs.Count<string>();
                 if (totalSongs > 0)
                 {
                     songList.Clear();
@@ -94,15 +121,19 @@ namespace FGH3ChartBrowser
                                 string album = "Unknown Album";
                                 string charter = "Unknown Charter";
                                 string genre = "";
+                                string loadingPhrase = "";
+                                int year = 0;
                                 try
                                 {
                                     config = new ConfigurationBuilder().AddIniFile(songIniFiles[0]).Build();
-                                    string songIniSection = "song";
-                                    artist = RemoveHtml(config.GetSection(songIniSection)["artist"]);
-                                    title = RemoveHtml(config.GetSection(songIniSection)["name"]);
-                                    album = RemoveHtml(config.GetSection(songIniSection)["album"]);
-                                    charter = RemoveHtml(config.GetSection(songIniSection)["charter"]);
-                                    genre = RemoveHtml(config.GetSection(songIniSection)["genre"]);
+                                    IConfigurationSection songSect = config.GetSection("song");
+                                    artist = RemoveHtml(songSect["artist"]);
+                                    title = RemoveHtml(songSect["name"]);
+                                    album = RemoveHtml(songSect["album"]);
+                                    charter = RemoveHtml(songSect["charter"]);
+                                    genre = RemoveHtml(songSect["genre"]);
+                                    loadingPhrase += RemoveHtml((songSect["loading_phrase"]+"").Replace("<br>", "\n"));
+                                    int.TryParse(config.GetSection("song")["year"], out year);
                                 }
                                 catch { }
                                 if (String.IsNullOrWhiteSpace(artist)) artist = "Unknown Artist";
@@ -114,7 +145,9 @@ namespace FGH3ChartBrowser
                                 songEntry.Album = "" + album;
                                 songEntry.Charter = "" + charter;
                                 songEntry.Genre = genre;
+                                songEntry.Year = year;
                                 songEntry.Path = chart;
+                                songEntry.LoadingPhrase = loadingPhrase;
                                 songList.Add(songEntry);
                                 
                                 scannedSongs += 1;
@@ -143,27 +176,33 @@ namespace FGH3ChartBrowser
                                 string album = "Unknown Album";
                                 string charter = "Unknown Charter";
                                 string genre = "";
+                                string loadingPhrase = "";
+                                int year = 0;
                                 try
                                 {
                                     config = new ConfigurationBuilder().AddIniFile(songIniFiles[0]).Build();
-                                    string songIniSection = "song";
-                                    artist = RemoveHtml(config.GetSection(songIniSection)["artist"]);
-                                    title = RemoveHtml(config.GetSection(songIniSection)["name"]);
-                                    album = RemoveHtml(config.GetSection(songIniSection)["album"]);
-                                    charter = RemoveHtml(config.GetSection(songIniSection)["charter"]);
-                                    genre = RemoveHtml(config.GetSection(songIniSection)["genre"]);
+                                    IConfigurationSection songSect = config.GetSection("song");
+                                    artist = RemoveHtml(songSect["artist"]);
+                                    title = RemoveHtml(songSect["name"]);
+                                    album = RemoveHtml(songSect["album"]);
+                                    charter = RemoveHtml(songSect["charter"]);
+                                    genre = RemoveHtml(songSect["genre"]);
+                                    loadingPhrase += RemoveHtml((songSect["loading_phrase"] + "").Replace("<br>","\n"));
+                                    int.TryParse(config.GetSection("song")["year"], out year);
                                 }
                                 catch { }
-                                if (String.IsNullOrWhiteSpace(artist)) artist = "Unknown Artist";
-                                if (String.IsNullOrWhiteSpace(title)) title = "Unknown Title";
-                                if (String.IsNullOrWhiteSpace(album)) album = "Unknown Album";
+                                if (String.IsNullOrWhiteSpace(artist))  artist = "Unknown Artist";
+                                if (String.IsNullOrWhiteSpace(title))   title = "Unknown Title";
+                                if (String.IsNullOrWhiteSpace(album))   album = "Unknown Album";
                                 if (String.IsNullOrWhiteSpace(charter)) charter = "Unknown Charter";
                                 songEntry.Artist = "" + artist;
                                 songEntry.Title = "" + title;
                                 songEntry.Album = "" + album;
                                 songEntry.Charter = "" + charter;
                                 songEntry.Genre = genre;
+                                songEntry.Year = year;
                                 songEntry.Path = midi;
+                                songEntry.LoadingPhrase = loadingPhrase;
                                 songList.Add(songEntry);
 
                                 scannedSongs += 1;
@@ -176,27 +215,56 @@ namespace FGH3ChartBrowser
                         scanProgress = scannedSongs / totalSongs * 100;
                         bw.ReportProgress(scanProgress);
                     }
+                    foreach (string sngPath in sngs)
+                    {
+                        FileInfo fileInfo = new FileInfo(sngPath);
+                        // I think I got this done correctly...?
+                        SongEntry songEntry = new SongEntry();
+                        songEntry.Genre = "";
+                        songEntry.LoadingPhrase = "";
+                        songEntry.Year = 0;
+                        try
+                        {
+                            Sng sngData = Sng.Load(sngPath);
+                            songEntry.Artist        = sngData.meta["artist"];
+                            songEntry.Title         = sngData.meta["name"];
+                            songEntry.Album         = sngData.meta["album"];
+                            songEntry.Genre         = sngData.meta["genre"];
+                            songEntry.Charter       = sngData.meta["charter"];
+                            songEntry.LoadingPhrase = sngData.meta["loading_phrase"];
+                            int year = 0;
+                            int.TryParse(sngData.meta["year"], out year);
+                            songEntry.Year = year;
+                        }
+                        catch
+                        {
+                            songEntry.Artist = "Unknown Artist";
+                            songEntry.Title = "Unknown Title";
+                            songEntry.Album = "Unknown Album";
+                            songEntry.Charter = "Unknown Charter";
+                        }
+                        songEntry.Path = sngPath;
+                        songList.Add(songEntry);
+                    }
                 }
             }
         }
 
-        private async void UpdateScanProgress(object? sender, ProgressChangedEventArgs e)
+        private void UpdateScanProgress(object? sender, ProgressChangedEventArgs e)
         {
-            // scanProgress = e.ProgressPercentage;
-            
-            // await Task.Delay(1);
+
         }
 
-        private async void FinishedScanning(object? sender, RunWorkerCompletedEventArgs e)
+        private void FinishedScanning(object? sender, RunWorkerCompletedEventArgs e)
         {
-            ScanProgressBar.IsIndeterminate = false;
             SongsDataGrid.ItemsSource = songList;
+            
             CollectionViewSource.GetDefaultView(SongsDataGrid.ItemsSource).Filter = this.SongFilter;
-
+            ScanProgressBar.IsIndeterminate = false;
             ScanChartsBtn.IsEnabled = true;
         }
 
-        private async void ScanChartsBtn_Click(object sender, RoutedEventArgs e)
+        private void ScanChartsBtn_Click(object sender, RoutedEventArgs e)
         {
             ScanChartsBtn.IsEnabled = false;
 
@@ -222,6 +290,8 @@ namespace FGH3ChartBrowser
             if (result.HasValue && result.Value)
             {
                 Chart_Folder_TxtBox.Text = dlg.FolderName;
+                config.AppSettings.Settings["charts_folder"].Value = dlg.FolderName;
+                config.Save();
             }
         }
 
@@ -236,7 +306,7 @@ namespace FGH3ChartBrowser
             {
                 return true;
             }
-            else
+            else if (item != null)
             {
                 if (item.GetType() == typeof(SongEntry))
                 {
@@ -258,17 +328,15 @@ namespace FGH3ChartBrowser
                 }
                 else { return true; }
             }
+            else return false;
+            
         }
 
         private void SearchTxtBox_TextChanged(object sender, TextChangedEventArgs e)
         {
+            if (!SongFilter(SongsDataGrid.SelectedItem)) SongsDataGrid.SelectedItem = null;
             SongsDataGrid.Items.Filter = SongFilter;
             SongsDataGrid.Items.Refresh();
-        }
-
-        private void SongListBox_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            // PlaySong();  // not working
         }
 
         private void PlaySong()
@@ -280,9 +348,98 @@ namespace FGH3ChartBrowser
                 if (entry.GetType() == typeof(SongEntry))
                 {
                     string shart = (entry as SongEntry).Path;
-                    System.Diagnostics.Process.Start(FGH3_Path_TxtBox.Text, "\"" + shart + "\"");
+                    if (System.IO.Path.Exists(FGH3_Path_TxtBox.Text))
+                        System.Diagnostics.Process.Start(FGH3_Path_TxtBox.Text, "\"" + shart + "\"");
                 }
             }
+        }
+
+        private void FGH3SettingsBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (System.IO.Path.Exists(FGH3_Path_TxtBox.Text))
+                System.Diagnostics.Process.Start(FGH3_Path_TxtBox.Text, "-settings");
+        }
+
+        [System.Runtime.InteropServices.DllImport("gdi32.dll")]
+        public static extern bool DeleteObject(IntPtr hObject);
+
+        public async void SetAlbumArt(string filepath)
+        {
+            BitmapImage bi = new BitmapImage(new Uri(filepath, UriKind.Absolute));
+            AlbumRect.Fill = new ImageBrush(bi);
+            AlbumRect.Visibility = Visibility.Visible;
+        }
+        public async void SetAlbumArt(Bitmap bitmap)
+        {
+            IntPtr hBitmap = bitmap.GetHbitmap();
+            BitmapImage bi;
+            try
+            {
+                bi = (BitmapImage)Imaging.CreateBitmapSourceFromHBitmap(
+                     hBitmap,
+                     IntPtr.Zero,
+                     Int32Rect.Empty,
+                     BitmapSizeOptions.FromEmptyOptions());
+                AlbumRect.Fill = new ImageBrush(bi);
+            }
+            finally
+            {
+                DeleteObject(hBitmap);
+            }
+            AlbumRect.Visibility = Visibility.Visible;
+        }
+
+        private void SongsDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (SongsDataGrid.SelectedItem != null)
+            {
+                var entry = SongsDataGrid.SelectedItem;
+                if (entry.GetType() == typeof(SongEntry))
+                {
+                    SongEntry song = (SongEntry)entry;
+                    currentLoadingPhrase = song.LoadingPhrase;
+                    LoadingPhraseTxt.Text = song.LoadingPhrase;
+                    if (song.Path.ToLower().EndsWith(".chart") || song.Path.ToLower().EndsWith(".mid"))
+                    {
+                        string? folder = new FileInfo(song.Path).DirectoryName;
+                        string[] albumCandidates = Directory.GetFiles(folder + "", "album.*", SearchOption.TopDirectoryOnly);
+                        if (albumCandidates.Length > 0)
+                        {
+                            SetAlbumArt(albumCandidates[0]);
+                        }
+                        else AlbumRect.Visibility = Visibility.Hidden;
+                    }
+
+                    if (song.Path.EndsWith(".sng"))
+                    {
+                        try
+                        {
+                            Sng sng = Sng.Load(song.Path);
+                            bool foundAlbumArt = false;
+                            foreach (var file in sng.files)
+                            {
+                                if (file.name.ToLower().Contains("album"))
+                                {
+                                    SetAlbumArt(new Bitmap(new MemoryStream(file.data)));
+                                    foundAlbumArt = true;
+                                    break;
+                                }
+                            }
+                            if (!foundAlbumArt)
+                            {
+                                AlbumRect.Visibility = Visibility.Hidden;
+                            }
+                        }
+                        catch (Exception ex) { }
+                    }
+                }
+            }
+            else AlbumRect.Visibility = Visibility.Hidden;
+        }
+
+        private void SongsDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            // PlaySong();  // TO DO: Find a better way to implement quickly selecting a song to play?
         }
     }
     public class SongEntry
@@ -291,7 +448,9 @@ namespace FGH3ChartBrowser
         public string Title { get; set; }
         public string Album { get; set; }
         public string Charter { get; set; }
+        public int Year { get; set; }
         public string Genre { get; set; }
         public string Path { get; set; }
+        public string LoadingPhrase { get; set; }
     }
 }
