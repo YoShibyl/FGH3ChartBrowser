@@ -25,4 +25,5 @@ Requires a Windows PC capable of running FastGH3 and this program.
 
 ## Credits
 - [donnaken15](https://github.com/donnaken15) : Maker of FastGH3
+- [mdsitton](https://github.com/mdsitton) : Clone Hero developer who made [the `.sng` format](https://github.com/mdsitton/SngFileFormat)
 - Neversoft / Aspyr : Makers of the original *Guitar Hero III* PC port
