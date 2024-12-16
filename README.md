@@ -20,7 +20,7 @@ Requires a Windows PC capable of running FastGH3 and this program.
 ## Planned features
 - ~~An option to quickly access FastGH3's settings menu (should be easy to add)~~ DONE
 - Storing scan results for later
-- ~~Scanning for `.sng` files (soon?)~~ DONE
+- ~~Scanning for `.sng` files (soon?)~~ Done but currently broken and I'm working on a fix right now
 - A better way to visualize song data, such as album art and other metadata *(WIP)*
 
 ## Credits
