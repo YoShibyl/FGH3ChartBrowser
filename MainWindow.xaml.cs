@@ -26,6 +26,7 @@ using System.Drawing.Drawing2D;
 using Microsoft.VisualBasic;
 using SysConfig = System.Configuration;
 using System.Collections.Specialized;
+using System.Runtime.CompilerServices;
 
 namespace FGH3ChartBrowser
 {
@@ -39,7 +40,8 @@ namespace FGH3ChartBrowser
         public int totalSongs;
         public int scannedSongs;
         public int scanProgress;
-        public BackgroundWorker bgWorker;
+        public BackgroundWorker ScanBgWorker;
+        public BackgroundWorker AlbumLoadBgWorker;
         public string currentLoadingPhrase;
         public SysConfig.Configuration config;
 
@@ -51,7 +53,8 @@ namespace FGH3ChartBrowser
             totalSongs = 0;
             scannedSongs = 0;
             SongsDataGrid.ItemsSource = songList;
-            bgWorker = new BackgroundWorker();
+            ScanBgWorker = new BackgroundWorker();
+            AlbumLoadBgWorker = new BackgroundWorker();
             Thread.Sleep(10);
             LoadConfig();
         }
@@ -127,11 +130,11 @@ namespace FGH3ChartBrowser
                                 {
                                     config = new ConfigurationBuilder().AddIniFile(songIniFiles[0]).Build();
                                     IConfigurationSection songSect = config.GetSection("song");
-                                    artist = RemoveHtml(songSect["artist"]);
-                                    title = RemoveHtml(songSect["name"]);
-                                    album = RemoveHtml(songSect["album"]);
-                                    charter = RemoveHtml(songSect["charter"]);
-                                    genre = RemoveHtml(songSect["genre"]);
+                                    artist = RemoveHtml(songSect["artist"] + "");
+                                    title = RemoveHtml(songSect["name"] + "");
+                                    album = RemoveHtml(songSect["album"] + "");
+                                    charter = RemoveHtml(songSect["charter"] + "");
+                                    genre = RemoveHtml(songSect["genre"] + "");
                                     loadingPhrase += RemoveHtml((songSect["loading_phrase"]+"").Replace("<br>", "\n"));
                                     int.TryParse(config.GetSection("song")["year"], out year);
                                 }
@@ -182,11 +185,11 @@ namespace FGH3ChartBrowser
                                 {
                                     config = new ConfigurationBuilder().AddIniFile(songIniFiles[0]).Build();
                                     IConfigurationSection songSect = config.GetSection("song");
-                                    artist = RemoveHtml(songSect["artist"]);
-                                    title = RemoveHtml(songSect["name"]);
-                                    album = RemoveHtml(songSect["album"]);
-                                    charter = RemoveHtml(songSect["charter"]);
-                                    genre = RemoveHtml(songSect["genre"]);
+                                    artist = RemoveHtml(songSect["artist"] + "");
+                                    title = RemoveHtml(songSect["name"] + "");
+                                    album = RemoveHtml(songSect["album"] + "");
+                                    charter = RemoveHtml(songSect["charter"] + "");
+                                    genre = RemoveHtml(songSect["genre"] + "");
                                     loadingPhrase += RemoveHtml((songSect["loading_phrase"] + "").Replace("<br>","\n"));
                                     int.TryParse(config.GetSection("song")["year"], out year);
                                 }
@@ -226,12 +229,24 @@ namespace FGH3ChartBrowser
                         try
                         {
                             Sng sngData = Sng.Load(sngPath);
-                            songEntry.Artist        = sngData.meta["artist"];
-                            songEntry.Title         = sngData.meta["name"];
-                            songEntry.Album         = sngData.meta["album"];
-                            songEntry.Genre         = sngData.meta["genre"];
-                            songEntry.Charter       = sngData.meta["charter"];
-                            songEntry.LoadingPhrase = sngData.meta["loading_phrase"];
+                            string artist = "";
+                            string title = "";
+                            string album = "";
+                            string charter = "";
+                            string genre = "";
+                            string loadingPhrase = "";
+                            sngData.meta.TryGetValue("artist", out artist);
+                            sngData.meta.TryGetValue("name", out title);
+                            sngData.meta.TryGetValue("album", out album);
+                            sngData.meta.TryGetValue("genre", out genre);
+                            sngData.meta.TryGetValue("charter", out charter);
+                            sngData.meta.TryGetValue("loading_phrase", out loadingPhrase);
+                            songEntry.Title         = "" + title;
+                            songEntry.Artist        = "" + artist;
+                            songEntry.Album         = "" + album;
+                            songEntry.Genre         = "" + genre;
+                            songEntry.Charter       = "" + charter;
+                            songEntry.LoadingPhrase = "" + loadingPhrase;
                             int year = 0;
                             int.TryParse(sngData.meta["year"], out year);
                             songEntry.Year = year;
@@ -261,21 +276,25 @@ namespace FGH3ChartBrowser
             
             CollectionViewSource.GetDefaultView(SongsDataGrid.ItemsSource).Filter = this.SongFilter;
             ScanProgressBar.IsIndeterminate = false;
+            ChartsPathBrowseBtn.IsEnabled = true;
+            Chart_Folder_TxtBox.IsEnabled = true;
             ScanChartsBtn.IsEnabled = true;
         }
 
         private void ScanChartsBtn_Click(object sender, RoutedEventArgs e)
         {
             ScanChartsBtn.IsEnabled = false;
+            ChartsPathBrowseBtn.IsEnabled = false;
+            Chart_Folder_TxtBox.IsEnabled = false;
 
             scanFolder = Chart_Folder_TxtBox.Text;
 
             ScanProgressBar.IsIndeterminate = true;
-            bgWorker.WorkerReportsProgress = true;
-            bgWorker.DoWork += ScanSongs;
-            bgWorker.ProgressChanged += UpdateScanProgress;
-            bgWorker.RunWorkerCompleted += FinishedScanning;
-            bgWorker.RunWorkerAsync();
+            ScanBgWorker.WorkerReportsProgress = true;
+            ScanBgWorker.DoWork += ScanSongs;
+            ScanBgWorker.ProgressChanged += UpdateScanProgress;
+            ScanBgWorker.RunWorkerCompleted += FinishedScanning;
+            ScanBgWorker.RunWorkerAsync();
         }
 
         public static string RemoveHtml(string input)
@@ -360,32 +379,46 @@ namespace FGH3ChartBrowser
                 System.Diagnostics.Process.Start(FGH3_Path_TxtBox.Text, "-settings");
         }
 
+        public BitmapSource bmpSrc;
+        public Bitmap bmp;
+
         [System.Runtime.InteropServices.DllImport("gdi32.dll")]
         public static extern bool DeleteObject(IntPtr hObject);
 
-        public async void SetAlbumArt(string filepath)
+        public async void LoadAlbumArtFromBitmap(string filepath)
         {
             BitmapImage bi = new BitmapImage(new Uri(filepath, UriKind.Absolute));
+            bmpSrc = bi;
             AlbumRect.Fill = new ImageBrush(bi);
             AlbumRect.Visibility = Visibility.Visible;
         }
-        public async void SetAlbumArt(Bitmap bitmap)
+        public async void LoadAlbumArtFromBitmap(Bitmap bitmap)
         {
             IntPtr hBitmap = bitmap.GetHbitmap();
-            BitmapImage bi;
+            BitmapSource bi;
             try
             {
-                bi = (BitmapImage)Imaging.CreateBitmapSourceFromHBitmap(
+                bi = Imaging.CreateBitmapSourceFromHBitmap(
                      hBitmap,
                      IntPtr.Zero,
                      Int32Rect.Empty,
                      BitmapSizeOptions.FromEmptyOptions());
+                bmpSrc = bi;
                 AlbumRect.Fill = new ImageBrush(bi);
+                AlbumRect.Visibility = Visibility.Visible;
             }
             finally
             {
                 DeleteObject(hBitmap);
             }
+        }
+        public async void LoadAlbumArt(object? sender, DoWorkEventArgs e)
+        {
+            LoadAlbumArtFromBitmap(bmp);
+        }
+        private void SetAlbumArt(object? sender, RunWorkerCompletedEventArgs? e)
+        {
+            AlbumRect.Fill = new ImageBrush(bmpSrc);
             AlbumRect.Visibility = Visibility.Visible;
         }
 
@@ -405,23 +438,31 @@ namespace FGH3ChartBrowser
                         string[] albumCandidates = Directory.GetFiles(folder + "", "album.*", SearchOption.TopDirectoryOnly);
                         if (albumCandidates.Length > 0)
                         {
-                            SetAlbumArt(albumCandidates[0]);
+                            LoadAlbumArtFromBitmap(albumCandidates[0]);
                         }
                         else AlbumRect.Visibility = Visibility.Hidden;
                     }
 
                     if (song.Path.EndsWith(".sng"))
                     {
+                        
                         try
                         {
                             Sng sng = Sng.Load(song.Path);
                             bool foundAlbumArt = false;
                             foreach (var file in sng.files)
                             {
-                                if (file.name.ToLower().Contains("album"))
+                                if (file.name.ToLower().StartsWith("album"))
                                 {
-                                    SetAlbumArt(new Bitmap(new MemoryStream(file.data)));
                                     foundAlbumArt = true;
+                                    
+                                    // bmp = new Bitmap(new MemoryStream(file.data));
+                                    LoadAlbumArtFromBitmap(new Bitmap(new MemoryStream(file.data)));
+                                    SetAlbumArt(null, null);
+                                    // AlbumLoadBgWorker.DoWork += LoadAlbumArt;
+                                    // AlbumLoadBgWorker.WorkerReportsProgress = false;
+                                    // AlbumLoadBgWorker.RunWorkerCompleted += SetAlbumArt;
+                                    // AlbumLoadBgWorker.RunWorkerAsync();
                                     break;
                                 }
                             }
