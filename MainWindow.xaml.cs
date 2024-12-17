@@ -27,6 +27,8 @@ using Microsoft.VisualBasic;
 using SysConfig = System.Configuration;
 using System.Collections.Specialized;
 using System.Runtime.CompilerServices;
+using System.Diagnostics;
+using System.Reflection;
 
 namespace FGH3ChartBrowser
 {
@@ -40,6 +42,7 @@ namespace FGH3ChartBrowser
         public int totalSongs;
         public int scannedSongs;
         public int scanProgress;
+        public int scanErrors;
         public BackgroundWorker ScanBgWorker;
         public BackgroundWorker AlbumLoadBgWorker;
         public string currentLoadingPhrase;
@@ -52,12 +55,18 @@ namespace FGH3ChartBrowser
             scanFolder = "";
             songList = new List<SongEntry>() { };
             InitializeComponent();
+            MainWin.Title += $" v{Assembly.GetExecutingAssembly().GetName().Version?.ToString(3)}";
             RefreshSongInfo();
             totalSongs = 0;
             scannedSongs = 0;
+            scanErrors = 0;
             SongsDataGrid.ItemsSource = songList;
             ScanBgWorker = new BackgroundWorker();
-            AlbumLoadBgWorker = new BackgroundWorker();
+            ScanBgWorker.WorkerReportsProgress = true;
+            ScanBgWorker.DoWork += ScanSongs;
+            ScanBgWorker.ProgressChanged += UpdateScanProgress;
+            ScanBgWorker.RunWorkerCompleted += FinishedScanning;
+            AlbumLoadBgWorker = new BackgroundWorker(); // soon?
             currentLoadingPhrase = "";
             config = SysConfig.ConfigurationManager.OpenExeConfiguration(SysConfig.ConfigurationUserLevel.None);
             bmpSrc = new BitmapImage();
@@ -154,7 +163,7 @@ namespace FGH3ChartBrowser
         private async void ScanSongs(object? sender, DoWorkEventArgs e)
         {
             string searchPath = scanFolder;
-            //BackgroundWorker bw = sender as BackgroundWorker;
+            BackgroundWorker bw = sender as BackgroundWorker;
             if (!String.IsNullOrWhiteSpace(searchPath) && System.IO.Path.Exists(searchPath))
             {
                 IEnumerable<string> charts = Directory.EnumerateFiles(searchPath, "notes.chart", SearchOption.AllDirectories);
@@ -166,6 +175,7 @@ namespace FGH3ChartBrowser
                 {
                     songList.Clear();
                     scannedSongs = 0;
+                    scanErrors = 0;
                     foreach (string chart in charts)
                     {
                         FileInfo fileInfo = new FileInfo(chart);
@@ -205,7 +215,7 @@ namespace FGH3ChartBrowser
                                     songEntry.IntensityLead = int.Clamp(diffLead, 0, 100);
                                     songEntry.IntensityBass = int.Clamp(diffBass, 0, 100);
                                 }
-                                catch { }
+                                catch { scanErrors++; }
                                 songEntry.Artist = "" + artist;
                                 songEntry.Title = "" + title;
                                 songEntry.Album = "" + album;
@@ -216,15 +226,16 @@ namespace FGH3ChartBrowser
                                 songEntry.LoadingPhrase = loadingPhrase;
                                 songList.Add(songEntry);
                                 
-                                scannedSongs += 1;
+                                scannedSongs++;
                             }
                         }
                         else
                         {
                             totalSongs -= 1;
+                            scanErrors++;
                         }
-                        scanProgress = scannedSongs / totalSongs * 100;
-                        // bw.ReportProgress(scanProgress);
+                        scanProgress = 100 * scannedSongs / totalSongs;
+                        bw.ReportProgress(scanProgress);
                     }
                     foreach (string midi in midis)
                     {
@@ -264,7 +275,7 @@ namespace FGH3ChartBrowser
                                     songEntry.IntensityLead = int.Clamp(diffLead, 0, 100);
                                     songEntry.IntensityBass = int.Clamp(diffBass, 0, 100);
                                 }
-                                catch { }
+                                catch { scanErrors++; }
                                 songEntry.Artist = "" + artist;
                                 songEntry.Title = "" + title;
                                 songEntry.Album = "" + album;
@@ -275,15 +286,17 @@ namespace FGH3ChartBrowser
                                 songEntry.LoadingPhrase = loadingPhrase;
                                 songList.Add(songEntry);
 
-                                scannedSongs += 1;
+                                scannedSongs++;
                             }
                         }
                         else
                         {
                             totalSongs -= 1;
+                            scanErrors++;
                         }
-                        scanProgress = scannedSongs / totalSongs * 100;
-                        //bw.ReportProgress(scanProgress);
+                        scanProgress = 100 * scannedSongs / totalSongs;
+                        bw.ReportProgress(scanProgress);
+
                     }
                     foreach (string sngPath in sngs)
                     {
@@ -333,9 +346,13 @@ namespace FGH3ChartBrowser
                             songEntry.Title = "Unknown Title";
                             songEntry.Album = "Unknown Album";
                             songEntry.Charter = "Unknown Charter";
+                            scanErrors++;
                         }
                         songEntry.Path = sngPath;
                         songList.Add(songEntry);
+                        scannedSongs++;
+                        scanProgress = 100 * scannedSongs / totalSongs;
+                        bw.ReportProgress(scanProgress);
                     }
                 }
             }
@@ -343,39 +360,39 @@ namespace FGH3ChartBrowser
 
         private void UpdateScanProgress(object? sender, ProgressChangedEventArgs e)
         {
-
+            ScanProgressBar.Value = e.ProgressPercentage;
+            ScanProgressTxt.Text = $"{scannedSongs} / {totalSongs}";
         }
 
 
         private void FinishedScanning(object? sender, RunWorkerCompletedEventArgs e)
         {
             SongsDataGrid.ItemsSource = songList;
-            
             CollectionViewSource.GetDefaultView(SongsDataGrid.ItemsSource).Filter = this.SongFilter;
-            ScanProgressBar.IsIndeterminate = false;
+            ScanProgressBar.Value = 100;
+            ScanProgressTxt.Text = $"{songList.Count} songs found";
+            if (scanErrors > 0) ScanProgressTxt.Text += $" ({scanErrors} errors)";
             ChartsPathBrowseBtn.IsEnabled = true;
             Chart_Folder_TxtBox.IsEnabled = true;
+            ScanChartsBtn.Content = "Scan Songs";
             ScanChartsBtn.IsEnabled = true;
         }
 
         private void AlbumClick(object sender, RoutedEventArgs e)
         {
             // TO DO: figure out making a popup with album image
+            
         }
 
         private void ScanChartsBtn_Click(object sender, RoutedEventArgs e)
         {
             ScanChartsBtn.IsEnabled = false;
+            ScanChartsBtn.Content = "Scanning...";
             ChartsPathBrowseBtn.IsEnabled = false;
             Chart_Folder_TxtBox.IsEnabled = false;
 
             scanFolder = Chart_Folder_TxtBox.Text;
 
-            ScanProgressBar.IsIndeterminate = true;
-            ScanBgWorker.WorkerReportsProgress = true;
-            ScanBgWorker.DoWork += ScanSongs;
-            ScanBgWorker.ProgressChanged += UpdateScanProgress;
-            ScanBgWorker.RunWorkerCompleted += FinishedScanning;
             ScanBgWorker.RunWorkerAsync();
         }
 
