@@ -1,9 +1,9 @@
 # Chart Browser for FastGH3
 This is a simple tool for quickly scanning and loading custom Guitar Hero songs in [FastGH3](https://github.com/donnaken15/FastGH3).
 <details>
-<summary>Screenshot (v1.1)</summary>
+<summary>Screenshot (v1.2)</summary>
   
-  ![image](https://github.com/user-attachments/assets/ec3bd0e6-f443-4c43-b39e-f8b547a8d88e)
+  ![image](https://github.com/user-attachments/assets/a302bf6d-cdec-4a7b-81bc-dabb14f542ef)
 
 </details>
 
@@ -24,6 +24,6 @@ Requires a Windows PC capable of running FastGH3 and this program.
 - A better way to visualize song data, such as album art and other metadata *(WIP)*
 
 ## Credits
-- [donnaken15](https://github.com/donnaken15) : Maker of FastGH3
+- [donnaken15](https://github.com/donnaken15) : Maker of [FastGH3](https://github.com/donnaken15/FastGH3)
 - [mdsitton](https://github.com/mdsitton) : Clone Hero developer who made [the `.sng` format](https://github.com/mdsitton/SngFileFormat)
 - Neversoft / Aspyr : Makers of the original *Guitar Hero III* PC port
