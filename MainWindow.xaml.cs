@@ -140,8 +140,15 @@ namespace FGH3ChartBrowser
                 config.AppSettings.Settings["fastgh3_exe_location"].Value = @"C:\Program Files (x86)\FastGH3\FastGH3.exe";
                 config.Save();
             }
+            if (!config.AppSettings.Settings.AllKeys.Contains("ui_theme"))
+            {
+                config.AppSettings.Settings.Add("ui_theme", "0");
+            }
+            int.TryParse(config.AppSettings.Settings["ui_theme"].Value, out int theme);
+            ThemeSwitcher.SelectedIndex = theme;
             scanFolder = config.AppSettings.Settings["charts_folder"].Value;
             Chart_Folder_TxtBox.Text = scanFolder;
+            config.Save();
         }
 
         private void GH3PathBrowseBtn_Click(object sender, RoutedEventArgs e)
@@ -599,6 +606,33 @@ namespace FGH3ChartBrowser
                         System.Diagnostics.Process.Start("explorer.exe", $"/select, \"{song.Path}\"");
                     else
                         System.Diagnostics.Process.Start("explorer.exe", songDir);
+                }
+            }
+        }
+
+        private void ThemeSwitcher_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (ThemeSwitcher.SelectedIndex >= 0)
+            {
+                switch (ThemeSwitcher.SelectedIndex)
+                {
+                    case 0:
+                        MainWin.ThemeMode = ThemeMode.System;
+                        break;
+                    case 1:
+                        MainWin.ThemeMode = ThemeMode.Dark;
+                        break;
+                    case 2:
+                        MainWin.ThemeMode = ThemeMode.Light;
+                        break;
+                }
+                if (config != null)
+                {
+                    if (config.AppSettings.Settings.AllKeys.Contains("ui_theme"))
+                    {
+                        config.AppSettings.Settings["ui_theme"].Value = ThemeSwitcher.SelectedIndex.ToString();
+                        config.Save();
+                    }
                 }
             }
         }
