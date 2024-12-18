@@ -15,7 +15,7 @@ This is a simple tool for quickly scanning and loading custom Guitar Hero songs 
 
 ## Prerequisites (v1.3.0 and up)
 - Windows 10 22H2 or newer
-- [.NET SDK 9.0](https://dotnet.microsoft.com/en-us/download/dotnet/9.0) (Probably required, since v1.3.0+ is built with .NET 9)
+- [.NET Desktop Runtime 9.0](https://dotnet.microsoft.com/en-us/download/dotnet/9.0) (Probably required, since v1.3.0+ is built with .NET 9)
 - [FastGH3](https://github.com/donnaken15/FastGH3)
 
 If you can't get v1.3.0 or newer to launch, then either install .NET 9 or try [v1.2.2](https://github.com/YoShibyl/FGH3ChartBrowser/releases/tag/v1.2.2) instead.
