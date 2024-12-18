@@ -4,6 +4,8 @@
              xmlns:local="clr-namespace:FGH3ChartBrowser"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <ResourceDictionary>
+            
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

@@ -55,7 +55,9 @@ namespace FGH3ChartBrowser
             scanFolder = "";
             songList = new List<SongEntry>() { };
             InitializeComponent();
+            // TO DO: Figure out dark mode theme?
             MainWin.Title += $" v{Assembly.GetExecutingAssembly().GetName().Version?.ToString(3)}";
+            ScanProgressBar.Value = 0;
             RefreshSongInfo();
             totalSongs = 0;
             scannedSongs = 0;
@@ -84,6 +86,7 @@ namespace FGH3ChartBrowser
             string yearStr = "";
             if (song.Year > 0) yearStr = int.Clamp(song.Year, 0, 99999).ToString();
             YearTxt.Content = $"Year:  {yearStr}";
+            CharterTxt.Text = $"Charter:  {song.Charter}";
             LeadDiffTxt.Content = $"Lead Intensity:  {int.Clamp(song.IntensityLead, 0, 99)}";
             BassDiffTxt.Content = $"Bass Intensity:  {int.Clamp(song.IntensityBass, 0, 99)}";
             if (song.IntensityLead > 99) LeadDiffTxt.Content += "+";
@@ -121,6 +124,7 @@ namespace FGH3ChartBrowser
             AlbumTxt.Text = "Album:  ";
             GenreTxt.Text = "Genre:  ";
             YearTxt.Content = "Year:  ";
+            CharterTxt.Text = "Charter:  ";
             LeadDiffTxt.Content = "Lead Intensity:  ";
             BassDiffTxt.Content = "Bass Intensity:  ";
             LeadStarsTxt.Content = "☆☆☆☆☆☆";
