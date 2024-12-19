@@ -7,9 +7,9 @@ This is a simple tool for quickly scanning and loading custom Guitar Hero songs 
 
 </details>
 <details>
-  <summary>Screenshot (v1.3.0 Dark Mode)</summary>
+  <summary>Screenshot (v1.3.1 Dark Mode)</summary>
 
-  ![image](https://github.com/user-attachments/assets/b3d40558-fe18-4b5c-a2ee-99bfa56a8a1f)
+  ![image](https://github.com/user-attachments/assets/839a0a60-235e-4410-a4ed-da8adaad198b)
 
 </details>
 
@@ -31,6 +31,7 @@ If you can't get v1.3.0 or newer to launch, then either install .NET 9 or try [v
 ## Planned features
 - Storing scan results for later
 - ~~Dark mode and/or UI themes~~ Dark Mode theme added in v1.3.0
+- Guitar controller navigation?
 
 ## Credits
 - [donnaken15](https://github.com/donnaken15) : Maker of [FastGH3](https://github.com/donnaken15/FastGH3)
