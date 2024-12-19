@@ -50,6 +50,8 @@ namespace FGH3ChartBrowser
         public BitmapSource bmpSrc;
         public Bitmap bmp;
 
+        public AlbumView albumView;
+
         public MainWindow()
         {
             scanFolder = "";
@@ -170,7 +172,7 @@ namespace FGH3ChartBrowser
                 config.Save();
             }
         }
-
+        
         private async void ScanSongs(object? sender, DoWorkEventArgs e)
         {
             string searchPath = scanFolder;
@@ -391,8 +393,27 @@ namespace FGH3ChartBrowser
 
         private void AlbumClick(object sender, RoutedEventArgs e)
         {
-            // TO DO: figure out making a popup with album image
-            
+            if (SongsDataGrid.SelectedItem != null && AlbumRect.Visibility == Visibility.Visible)
+            {
+                SongEntry song = (SongEntry)SongsDataGrid.SelectedItem;
+                if (albumView != null) albumView.Close();
+                albumView = new AlbumView();
+                albumView.ThemeMode = this.ThemeMode;
+                albumView.Title += $": {song.Album}";
+                albumView.Background = AlbumRect.Fill;
+                
+                albumView.Show();
+            }
+        }
+
+        private void CopyAlbumArtToClipboard(object sender, RoutedEventArgs e)
+        {
+            if (AlbumRect.Visibility == Visibility.Visible)
+            {
+                ImageBrush brush = (ImageBrush)AlbumRect.Fill;
+                ImageSource imgsrc = brush.ImageSource;
+                Clipboard.SetImage((BitmapSource)imgsrc);
+            }
         }
 
         private void ScanChartsBtn_Click(object sender, RoutedEventArgs e)
@@ -466,6 +487,14 @@ namespace FGH3ChartBrowser
             if (!SongFilter(SongsDataGrid.SelectedItem)) SongsDataGrid.SelectedItem = null;
             SongsDataGrid.Items.Filter = SongFilter;
             SongsDataGrid.Items.Refresh();
+            if (SongsDataGrid.SelectedItem == null && SongsDataGrid.Items.Count >= 0)
+            {
+                SongsDataGrid.SelectedIndex = 0;
+            }
+            else
+            {
+                SongsDataGrid.ScrollIntoView(SongsDataGrid.SelectedItem);
+            }
         }
 
         private void PlaySong()
@@ -529,7 +558,9 @@ namespace FGH3ChartBrowser
         private void SetAlbumArt(object? sender, RunWorkerCompletedEventArgs? e)
         {
             AlbumRect.Fill = new ImageBrush(bmpSrc);
+            AlbumRect.Stretch = Stretch.Uniform;
             AlbumRect.Visibility = Visibility.Visible;
+            AlbumClickBtn.Visibility = Visibility.Visible;
         }
         private void SongsDataGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -564,7 +595,7 @@ namespace FGH3ChartBrowser
                                 if (file.name.ToLower().StartsWith("album"))
                                 {
                                     foundAlbumArt = true;
-                                    
+
                                     // bmp = new Bitmap(new MemoryStream(file.data));
                                     LoadAlbumArtFromBitmap(new Bitmap(new MemoryStream(file.data)));
                                     SetAlbumArt(null, null);
@@ -577,14 +608,24 @@ namespace FGH3ChartBrowser
                             }
                             if (!foundAlbumArt)
                             {
+                                AlbumClickBtn.Visibility = Visibility.Collapsed;
                                 AlbumRect.Visibility = Visibility.Hidden;
                             }
                         }
-                        catch { }
+                        catch
+                        {
+                            AlbumClickBtn.Visibility = Visibility.Collapsed;
+                            AlbumRect.Visibility = Visibility.Hidden;
+                        }
                     }
                 }
             }
-            else AlbumRect.Visibility = Visibility.Hidden;
+            else
+            {
+                RefreshSongInfo();
+                AlbumClickBtn.Visibility = Visibility.Collapsed;
+                AlbumRect.Visibility = Visibility.Hidden;
+            }
         }
 
         private void SongsDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
