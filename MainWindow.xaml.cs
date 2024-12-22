@@ -29,6 +29,9 @@ using System.Collections.Specialized;
 using System.Runtime.CompilerServices;
 using System.Diagnostics;
 using System.Reflection;
+using Vortice.XInput;
+using System.Windows.Threading;
+using System.Configuration;
 
 namespace FGH3ChartBrowser
 {
@@ -49,15 +52,31 @@ namespace FGH3ChartBrowser
         public SysConfig.Configuration config;
         public BitmapSource bmpSrc;
         public Bitmap bmp;
+        public ThemeMode themeMode;
+
+        private long pressTimeRepeat;
+        private long pressTimeDpadD;
+        private long pressTimeDpadU;
+        private long lastLaunchTime;
+        private bool isPressingD;
+        private bool isPressingU;
+        private bool isPressingFretG;
+        private bool isPressingFretR;
+        private bool isPressingFretY;
+        private bool isPressingFretB;
+        private bool isPressingFretO;
+        private bool isPressingStart;
+        private bool startingGame;
 
         public AlbumView albumView;
+        public SettingsDialog settingsDialog;
 
         public MainWindow()
         {
             scanFolder = "";
             songList = new List<SongEntry>() { };
             InitializeComponent();
-            // TO DO: Figure out dark mode theme?
+
             MainWin.Title += $" v{Assembly.GetExecutingAssembly().GetName().Version?.ToString(3)}";
             ScanProgressBar.Value = 0;
             RefreshSongInfo();
@@ -72,16 +91,173 @@ namespace FGH3ChartBrowser
             ScanBgWorker.RunWorkerCompleted += FinishedScanning;
             AlbumLoadBgWorker = new BackgroundWorker(); // soon?
             currentLoadingPhrase = "";
-            config = SysConfig.ConfigurationManager.OpenExeConfiguration(SysConfig.ConfigurationUserLevel.None);
+            Settings.Config = SysConfig.ConfigurationManager.OpenExeConfiguration(SysConfig.ConfigurationUserLevel.None);
             bmpSrc = new BitmapImage();
             bmp = new Bitmap(4,4);
+
+            lastLaunchTime = DateTime.Now.Ticks;
+            isPressingD = false;
+            isPressingU = false;
+            isPressingFretG = false;
+            isPressingFretR = false;
+            isPressingFretY = false;
+            isPressingFretB = false;
+            isPressingFretO = false;
+            startingGame = false;
+            pressTimeDpadD = DateTime.Now.Ticks;
+            pressTimeDpadU = DateTime.Now.Ticks;
+            pressTimeRepeat = DateTime.Now.Ticks / 10000;
+
+            DispatcherTimer inputTimer = new DispatcherTimer();
+            inputTimer.Interval = TimeSpan.FromMilliseconds(5);
+            inputTimer.Tick += InputTimer_Tick;
+            inputTimer.Start();
+
             LoadConfig();
+        }
+
+        [DllImport("user32.dll")]
+        static extern IntPtr GetForegroundWindow();
+
+        public bool IsForeground()
+        {
+            Window window = Application.Current.MainWindow;
+            IntPtr windowHandle = new WindowInteropHelper(window).Handle;
+            IntPtr foregroundWindow = GetForegroundWindow();
+            return windowHandle == foregroundWindow;
+        }
+
+        // Loop runs roughly every 5 ms (about 200x per second)
+        private void InputTimer_Tick(object? sender, EventArgs e)
+        {
+            if (System.Diagnostics.Process.GetProcessesByName("game").Length < 1
+                && System.Diagnostics.Process.GetProcessesByName("game!").Length < 1)
+                PlaySongBtn.IsEnabled = true;
+            else PlaySongBtn.IsEnabled = false;
+           
+            bool connected = XInput.GetState(Settings.controllerIndex, out State state);
+            bool foundInput = false;
+            if (connected && IsForeground())
+            {
+                GamepadButtons buttons = state.Gamepad.Buttons;
+
+                if (!isPressingFretB && state.Gamepad.Buttons.HasFlag(GamepadButtons.X))
+                {
+                    SearchTxtBox.Focus();
+                }
+
+                isPressingFretG = state.Gamepad.Buttons.HasFlag(GamepadButtons.A);
+                isPressingFretR = state.Gamepad.Buttons.HasFlag(GamepadButtons.B);
+                isPressingFretY = state.Gamepad.Buttons.HasFlag(GamepadButtons.Y);
+                isPressingFretB = state.Gamepad.Buttons.HasFlag(GamepadButtons.X);
+                isPressingFretO = state.Gamepad.Buttons.HasFlag(GamepadButtons.LeftShoulder);
+                isPressingStart = state.Gamepad.Buttons.HasFlag(GamepadButtons.Start);
+
+                if (!isPressingD && state.Gamepad.Buttons.HasFlag(GamepadButtons.DPadDown))
+                {
+                    int scroll = 1;
+                    if (isPressingFretO) scroll = 6; // scroll more if holding orange
+                    pressTimeDpadD = DateTime.Now.Ticks;
+                    StrumDown(scroll);
+                    isPressingD = true;
+                    foundInput = true;
+                }
+                else if (isPressingD && !state.Gamepad.Buttons.HasFlag(GamepadButtons.DPadDown))
+                {
+                    isPressingD = false;
+                }
+                if (!isPressingU && state.Gamepad.Buttons.HasFlag(GamepadButtons.DPadUp))
+                {
+                    int scroll = 1;
+                    if (isPressingFretO) scroll = 6; // scroll more if holding orange
+                    pressTimeDpadU = DateTime.Now.Ticks;
+                    StrumUp(scroll);
+                    isPressingU = true;
+                    foundInput = true;
+                }
+                else if (isPressingU && !state.Gamepad.Buttons.HasFlag(GamepadButtons.DPadUp))
+                {
+                    isPressingU = false;
+                }
+            }
+            // handle starting game when pressing green fret
+            if (isPressingStart && !startingGame && IsForeground())
+            {
+                startingGame = true;
+            }
+            if (!isPressingStart && startingGame)
+            {
+                startingGame = false;
+                if (IsForeground() && (DateTime.Now.Ticks - lastLaunchTime) / 10000 >= 2000)
+                {
+                    PlaySong();
+                }
+            }
+
+            long TimeSincePressD = (DateTime.Now.Ticks - pressTimeDpadD) / 10000;
+            long TimeSincePressU = (DateTime.Now.Ticks - pressTimeDpadU) / 10000;
+            
+            if (DateTime.Now.Ticks / 10000 - pressTimeRepeat >= 42)
+            {
+                int scroll = 1;
+                if (isPressingFretO) scroll = 6; // scroll more if holding orange
+                if (isPressingD)
+                {
+                    isPressingU = false;
+                    if (TimeSincePressD >= 350)
+                    {
+                        StrumDown(scroll);
+                    }
+                }
+                if (isPressingU)
+                {
+                    isPressingD = false;
+                    if (TimeSincePressU >= 350)
+                    {
+                        StrumUp(scroll);
+                    }
+                }
+            }
+            SongEntry? song = SongsDataGrid.SelectedItem as SongEntry;
+            if (song != null) RefreshAlbum(song);
+        }
+
+        private void StrumDown(int amount = 1)
+        {
+            if (!ScanBgWorker.IsBusy)
+            {
+                if (SongsDataGrid.SelectedIndex < SongsDataGrid.Items.Count - 1 && SongsDataGrid.Items.Count > 0)
+                {
+                    int index = SongsDataGrid.SelectedIndex;
+                    index += amount;
+                    if (index > SongsDataGrid.Items.Count - 1) index = SongsDataGrid.Items.Count - 1;
+                    SongsDataGrid.SelectedIndex = index;
+                    if (SongsDataGrid.SelectedItem != null) SongsDataGrid.ScrollIntoView(SongsDataGrid.SelectedItem);
+                }
+            }
+            pressTimeRepeat = DateTime.Now.Ticks / 10000;
+        }
+        private void StrumUp(int amount = 1)
+        {
+            if (!ScanBgWorker.IsBusy) {
+            {
+                if (SongsDataGrid.SelectedIndex > 0)
+                    {
+                        int index = SongsDataGrid.SelectedIndex;
+                        index -= amount;
+                        if (index < 0) index = 0;
+                        SongsDataGrid.SelectedIndex = index;
+                        if (SongsDataGrid.SelectedItem != null) SongsDataGrid.ScrollIntoView(SongsDataGrid.SelectedItem);
+                    }
+                }
+            }
+            pressTimeRepeat = DateTime.Now.Ticks / 10000;
         }
 
         private void RefreshSongInfo(SongEntry song)
         {
             LoadingPhraseTxt.Text = song.LoadingPhrase;
-            SongTitleTxt.Content = song.Title;
+            SongTitleTxt.Text = song.Title;
             ArtistTxt.Text = song.Artist;
             AlbumTxt.Text = "Album:  " + song.Album;
             GenreTxt.Text = "Genre:  " + song.Genre;
@@ -117,11 +293,22 @@ namespace FGH3ChartBrowser
             }
             LeadStarsTxt.Content = starsLead;
             BassStarsTxt.Content = starsBass;
+
+            SongTitleTxt.ToolTip = null;
+            ArtistTxt.ToolTip = null;
+            AlbumTxt.ToolTip = null;
+            GenreTxt.ToolTip = null;
+            CharterTxt.ToolTip = null;
+            if (!String.IsNullOrWhiteSpace(song.Title)) SongTitleTxt.ToolTip = song.Title;
+            if (!String.IsNullOrWhiteSpace(song.Artist)) ArtistTxt.ToolTip = song.Artist;
+            if (!String.IsNullOrWhiteSpace(song.Album)) AlbumTxt.ToolTip = song.Album;
+            if (!String.IsNullOrWhiteSpace(song.Genre)) GenreTxt.ToolTip = song.Genre;
+            if (!String.IsNullOrWhiteSpace(song.Charter)) CharterTxt.ToolTip = song.Charter;
         }
         private void RefreshSongInfo()
         {
             LoadingPhraseTxt.Text = "";
-            SongTitleTxt.Content = "";
+            SongTitleTxt.Text = "";
             ArtistTxt.Text = "";
             AlbumTxt.Text = "Album:  ";
             GenreTxt.Text = "Genre:  ";
@@ -131,26 +318,53 @@ namespace FGH3ChartBrowser
             BassDiffTxt.Content = "Bass Intensity:  ";
             LeadStarsTxt.Content = "☆☆☆☆☆☆";
             BassStarsTxt.Content = "☆☆☆☆☆☆";
+            SongTitleTxt.ToolTip = null;
+            ArtistTxt.ToolTip = null;
+            AlbumTxt.ToolTip = null;
+            GenreTxt.ToolTip = null;
+            CharterTxt.ToolTip = null;
         }
 
         private void LoadConfig()
         {
-            FGH3_Path_TxtBox.Text = config.AppSettings.Settings["fastgh3_exe_location"].Value;
+            if (!File.Exists("FGH3ChartBrowser.dll.config")) { File.WriteAllText("FGH3ChartBrowser.dll.config", "<?xml version=\"1.0\" encoding=\"utf-8\" ?>\r\n<configuration>\r\n\t<appSettings>\r\n\t\t<add key=\"fastgh3_exe_location\" value=\"C:\\Program Files (x86)\\FastGH3\\FastGH3.exe\"/>\r\n\t\t<add key=\"charts_folder\" value=\"\"/>\r\n\t\t<add key=\"ui_theme\" value=\"0\"/>\r\n\t\t<add key=\"auto_scan\" value=\"true\"/>\r\n\t</appSettings>\r\n</configuration>"); }
+            FGH3_Path_TxtBox.Text = Settings.Config.AppSettings.Settings["fastgh3_exe_location"].Value;
             if (String.IsNullOrEmpty(FGH3_Path_TxtBox.Text))
             {
                 FGH3_Path_TxtBox.Text = @"C:\Program Files (x86)\FastGH3\FastGH3.exe";
-                config.AppSettings.Settings["fastgh3_exe_location"].Value = @"C:\Program Files (x86)\FastGH3\FastGH3.exe";
-                config.Save();
+                Settings.Config.AppSettings.Settings["fastgh3_exe_location"].Value = @"C:\Program Files (x86)\FastGH3\FastGH3.exe";
+                Settings.Config.Save();
             }
-            if (!config.AppSettings.Settings.AllKeys.Contains("ui_theme"))
+            if (!Settings.Config.AppSettings.Settings.AllKeys.Contains("ui_theme"))
             {
-                config.AppSettings.Settings.Add("ui_theme", "0");
+                Settings.Config.AppSettings.Settings.Add("ui_theme", "0");
             }
-            int.TryParse(config.AppSettings.Settings["ui_theme"].Value, out int theme);
+            if (!Settings.Config.AppSettings.Settings.AllKeys.Contains("controller_index"))
+            {
+                Settings.Config.AppSettings.Settings.Add("controller_index", "0");
+            }
+            if (!Settings.Config.AppSettings.Settings.AllKeys.Contains("auto_scan"))
+            {
+                Settings.Config.AppSettings.Settings.Add("auto_scan", "true");
+            }
+            Settings.AutoScan = Settings.Config.AppSettings.Settings["auto_scan"].Value.ToLower() == "true";
+            int.TryParse(Settings.Config.AppSettings.Settings["ui_theme"].Value, out int theme);
             ThemeSwitcher.SelectedIndex = theme;
-            scanFolder = config.AppSettings.Settings["charts_folder"].Value;
+            uint.TryParse(Settings.Config.AppSettings.Settings["controller_index"].Value, out uint ci);
+            Settings.SetControllerIndex(ci);
+            scanFolder = Settings.Config.AppSettings.Settings["charts_folder"].Value;
             Chart_Folder_TxtBox.Text = scanFolder;
-            config.Save();
+            Settings.Config.Save();
+
+            if (Settings.AutoScan && Directory.Exists(scanFolder))
+            {
+                ScanChartsBtn.IsEnabled = false;
+                ScanChartsBtn.Content = "Scanning...";
+                ChartsPathBrowseBtn.IsEnabled = false;
+                Chart_Folder_TxtBox.IsEnabled = false;
+                scanFolder = Chart_Folder_TxtBox.Text;
+                ScanBgWorker.RunWorkerAsync();
+            }
         }
 
         private void GH3PathBrowseBtn_Click(object sender, RoutedEventArgs e)
@@ -168,8 +382,8 @@ namespace FGH3ChartBrowser
             {
                 string filename = dlg.FileName;
                 FGH3_Path_TxtBox.Text = filename;
-                config.AppSettings.Settings["fastgh3_exe_location"].Value = filename;
-                config.Save();
+                Settings.Config.AppSettings.Settings["fastgh3_exe_location"].Value = filename;
+                Settings.Config.Save();
             }
         }
         
@@ -377,9 +591,9 @@ namespace FGH3ChartBrowser
             ScanProgressTxt.Text = $"{scannedSongs} / {totalSongs}";
         }
 
-
         private void FinishedScanning(object? sender, RunWorkerCompletedEventArgs e)
         {
+            SongsDataGrid.IsEnabled = true;
             SongsDataGrid.ItemsSource = songList;
             CollectionViewSource.GetDefaultView(SongsDataGrid.ItemsSource).Filter = this.SongFilter;
             ScanProgressBar.Value = 100;
@@ -389,6 +603,22 @@ namespace FGH3ChartBrowser
             Chart_Folder_TxtBox.IsEnabled = true;
             ScanChartsBtn.Content = "Scan Songs";
             ScanChartsBtn.IsEnabled = true;
+            SortDataGrid(SongsDataGrid, 1);
+        }
+
+        public static void SortDataGrid(DataGrid dataGrid, int columnIndex = 0, ListSortDirection sortDirection = ListSortDirection.Ascending)
+        {
+            var column = dataGrid.Columns[columnIndex];
+            dataGrid.Items.SortDescriptions.Clear();
+            dataGrid.Items.SortDescriptions.Add(new SortDescription(column.SortMemberPath, sortDirection));
+
+            foreach (var col in dataGrid.Columns)
+            {
+                col.SortDirection = null;
+            }
+            column.SortDirection = sortDirection;
+
+            dataGrid.Items.Refresh();
         }
 
         private void AlbumClick(object sender, RoutedEventArgs e)
@@ -440,8 +670,8 @@ namespace FGH3ChartBrowser
             if (result.HasValue && result.Value)
             {
                 Chart_Folder_TxtBox.Text = dlg.FolderName;
-                config.AppSettings.Settings["charts_folder"].Value = dlg.FolderName;
-                config.Save();
+                Settings.Config.AppSettings.Settings["charts_folder"].Value = dlg.FolderName;
+                Settings.Config.Save();
             }
         }
 
@@ -499,17 +729,22 @@ namespace FGH3ChartBrowser
 
         private void PlaySong()
         {
-            int index = SongsDataGrid.SelectedIndex;
-            if (index >= 0)
+            if (System.Diagnostics.Process.GetProcessesByName("game").Length < 1
+                && System.Diagnostics.Process.GetProcessesByName("game!").Length < 1)
             {
-                var entry = SongsDataGrid.SelectedItems[0];
-                if (entry != null)
+                lastLaunchTime = DateTime.Now.Ticks;
+                int index = SongsDataGrid.SelectedIndex;
+                if (index >= 0)
                 {
-                    if (entry.GetType() == typeof(SongEntry))
+                    var entry = SongsDataGrid.SelectedItems[0];
+                    if (entry != null)
                     {
-                        string shart = (entry as SongEntry)?.Path + "";
-                        if (System.IO.Path.Exists(FGH3_Path_TxtBox.Text))
-                            System.Diagnostics.Process.Start(FGH3_Path_TxtBox.Text, "\"" + shart + "\"");
+                        if (entry.GetType() == typeof(SongEntry))
+                        {
+                            string shart = (entry as SongEntry)?.Path + "";
+                            if (System.IO.Path.Exists(FGH3_Path_TxtBox.Text))
+                                System.Diagnostics.Process.Start(FGH3_Path_TxtBox.Text, "\"" + shart + "\"");
+                        }
                     }
                 }
             }
@@ -572,65 +807,66 @@ namespace FGH3ChartBrowser
                     SongEntry song = (SongEntry)entry;
                     currentLoadingPhrase = song.LoadingPhrase;
                     RefreshSongInfo(song);
-                    if (song.Path.ToLower().EndsWith(".chart") || song.Path.ToLower().EndsWith(".mid"))
-                    {
-                        string? folder = new FileInfo(song.Path).DirectoryName;
-                        string[] albumCandidates = Directory.GetFiles(folder + "", "album.*", SearchOption.TopDirectoryOnly);
-                        if (albumCandidates.Length > 0)
-                        {
-                            LoadAlbumArtFromBitmap(albumCandidates[0]);
-                            SetAlbumArt(null, null);
-                        }
-                        else AlbumRect.Visibility = Visibility.Hidden;
-                    }
-
-                    if (song.Path.EndsWith(".sng"))
-                    {
-                        try
-                        {
-                            Sng sng = Sng.Load(song.Path);
-                            bool foundAlbumArt = false;
-                            foreach (var file in sng.files)
-                            {
-                                if (file.name.ToLower().StartsWith("album"))
-                                {
-                                    foundAlbumArt = true;
-
-                                    // bmp = new Bitmap(new MemoryStream(file.data));
-                                    LoadAlbumArtFromBitmap(new Bitmap(new MemoryStream(file.data)));
-                                    SetAlbumArt(null, null);
-                                    // AlbumLoadBgWorker.DoWork += LoadAlbumArt;
-                                    // AlbumLoadBgWorker.WorkerReportsProgress = false;
-                                    // AlbumLoadBgWorker.RunWorkerCompleted += SetAlbumArt;
-                                    // AlbumLoadBgWorker.RunWorkerAsync();
-                                    break;
-                                }
-                            }
-                            if (!foundAlbumArt)
-                            {
-                                AlbumClickBtn.Visibility = Visibility.Collapsed;
-                                AlbumRect.Visibility = Visibility.Hidden;
-                            }
-                        }
-                        catch
-                        {
-                            AlbumClickBtn.Visibility = Visibility.Collapsed;
-                            AlbumRect.Visibility = Visibility.Hidden;
-                        }
-                    }
+                    RefreshAlbum(song);
                 }
             }
             else
             {
                 RefreshSongInfo();
-                AlbumClickBtn.Visibility = Visibility.Collapsed;
+                AlbumClickBtn.Visibility = Visibility.Hidden;
                 AlbumRect.Visibility = Visibility.Hidden;
             }
         }
+        private void RefreshAlbum(SongEntry song)
+        {
+            if (song.Path.ToLower().EndsWith(".chart") || song.Path.ToLower().EndsWith(".mid"))
+            {
+                string? folder = new FileInfo(song.Path).DirectoryName;
+                string[] albumCandidates = Directory.GetFiles(folder + "", "album.*", SearchOption.TopDirectoryOnly);
+                if (albumCandidates.Length > 0)
+                {
+                    LoadAlbumArtFromBitmap(albumCandidates[0]);
+                    SetAlbumArt(null, null);
+                    AlbumRect.Visibility = Visibility.Visible;
+                    AlbumClickBtn.Visibility = Visibility.Visible;
+                }
+                else AlbumRect.Visibility = Visibility.Hidden;
+            }
+            if (song.Path.EndsWith(".sng"))
+            {
+                try
+                {
+                    Sng sng = Sng.Load(song.Path);
+                    bool foundAlbumArt = false;
+                    foreach (var file in sng.files)
+                    {
+                        if (file.name.ToLower().StartsWith("album"))
+                        {
+                            foundAlbumArt = true;
 
+                            LoadAlbumArtFromBitmap(new Bitmap(new MemoryStream(file.data)));
+                            SetAlbumArt(null, null);
+                            AlbumRect.Visibility = Visibility.Visible;
+                            AlbumClickBtn.Visibility = Visibility.Visible;
+                            break;
+                        }
+                    }
+                    if (!foundAlbumArt)
+                    {
+                        AlbumClickBtn.Visibility = Visibility.Collapsed;
+                        AlbumRect.Visibility = Visibility.Hidden;
+                    }
+                }
+                catch
+                {
+                    AlbumClickBtn.Visibility = Visibility.Collapsed;
+                    AlbumRect.Visibility = Visibility.Hidden;
+                }
+            }
+        }
         private void SongsDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            // PlaySong();  // TO DO: Find a better way to implement quickly selecting a song to play?
+            
         }
 
         private void OpenInExplorerBtn_Click(object sender, RoutedEventArgs e)
@@ -659,23 +895,62 @@ namespace FGH3ChartBrowser
                 {
                     case 0:
                         MainWin.ThemeMode = ThemeMode.System;
+                        themeMode = ThemeMode.System;
                         break;
                     case 1:
                         MainWin.ThemeMode = ThemeMode.Dark;
+                        themeMode = ThemeMode.Dark;
                         break;
                     case 2:
                         MainWin.ThemeMode = ThemeMode.Light;
+                        themeMode = ThemeMode.Light;
                         break;
                 }
-                if (config != null)
+                if (SongsDataGrid.SelectedItem != null)
                 {
-                    if (config.AppSettings.Settings.AllKeys.Contains("ui_theme"))
+                    SongsDataGrid.ScrollIntoView(SongsDataGrid.SelectedItem);
+                }
+                if (Settings.Config != null)
+                {
+                    if (Settings.Config.AppSettings.Settings.AllKeys.Contains("ui_theme"))
                     {
-                        config.AppSettings.Settings["ui_theme"].Value = ThemeSwitcher.SelectedIndex.ToString();
-                        config.Save();
+                        Settings.Config.AppSettings.Settings["ui_theme"].Value = ThemeSwitcher.SelectedIndex.ToString();
+                        Settings.Config.Save();
                     }
                 }
             }
+        }
+
+        private void SongsDataGrid_ContextOpened(object sender, RoutedEventArgs e)
+        {
+            if (SongsDataGrid.SelectedItem == null && sender.GetType() == typeof(ContextMenu))
+            {
+                ((ContextMenu)sender).IsOpen = false;
+            }
+            else if (SongsDataGrid.SelectedItem != null)
+            {
+                if (SongsDataGrid.SelectedItem.GetType() == typeof(SongEntry))
+                {
+                    SongEntry song = (SongEntry)SongsDataGrid.SelectedItem;
+                    PlaySongCtxMenuItem.Header = $"Play \"{song.Title}\"";
+                }
+            }
+        }
+
+        private void AlbumMenu_Opened(object sender, RoutedEventArgs e)
+        {
+            if (AlbumRect.Visibility == Visibility.Hidden && sender.GetType() == typeof(ContextMenu))
+            {
+                ((ContextMenu)sender).IsOpen = false;
+            }
+        }
+
+        private void OtherSettingsBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (settingsDialog != null) { settingsDialog.Close(); }
+            settingsDialog = new SettingsDialog();
+            settingsDialog.ThemeMode = this.ThemeMode;
+            settingsDialog.Show();
         }
     }
     public class SongEntry
@@ -703,6 +978,35 @@ namespace FGH3ChartBrowser
             LoadingPhrase = loadingPhrase;
             IntensityLead = intensityLead;
             IntensityBass = intensityBass;
+        }
+    }
+    public class Settings
+    {
+        public static Configuration Config {  get; set; }
+        public static uint controllerIndex { get; set; }
+        public static bool AutoScan { get; set; }
+
+        public static void SetControllerIndex(uint ci)
+        {
+            controllerIndex = ci;
+            Config.AppSettings.Settings["controller_index"].Value = controllerIndex.ToString();
+            Config.Save();
+        }
+        public static uint GetControllerIndex()
+        {
+            return controllerIndex;
+        }
+
+        public static void SetAutoScan(bool? value)
+        {
+            bool newval = value == true;
+            AutoScan = newval;
+            Config.AppSettings.Settings["auto_scan"].Value = newval.ToString().ToLower();
+            Config.Save();
+        }
+        public static bool GetAutoScan()
+        {
+            return AutoScan;
         }
     }
 }
