@@ -5,14 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FGH3ChartBrowser"
         mc:Ignorable="d"
-        Title="Album Art" Height="540" Width="520" ResizeMode="NoResize">
+        Title="Album Art" Height="620" Width="600" ResizeMode="NoResize">
     <Grid x:Name="AlbumGrid" ScrollViewer.VerticalScrollBarVisibility="Disabled">
         <Rectangle x:Name="BigAlbum" Grid.RowSpan="2" Grid.ColumnSpan="2">
             <Rectangle.Fill>
                 <ImageBrush Stretch="Uniform"/>
             </Rectangle.Fill>
         </Rectangle>
-        <Button Content="Button" Height="504" Width="500" HorizontalAlignment="Center" Opacity="0">
+        <Button Content="Button" HorizontalAlignment="Stretch" Opacity="0" VerticalAlignment="Stretch">
             <Button.ContextMenu>
                 <ContextMenu Name="AlbumMenu" StaysOpen="true">
                     <MenuItem Header="Copy image" Click="CopyAlbumArtToClipboard"/>

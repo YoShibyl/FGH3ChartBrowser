@@ -73,6 +73,12 @@ namespace FGH3ChartBrowser
 
         public MainWindow()
         {
+            if (!File.Exists("FGH3ChartBrowser.dll.config"))
+            {
+                File.WriteAllText("FGH3ChartBrowser.dll.config", "<?xml version=\"1.0\" encoding=\"utf-8\" ?>\r\n<configuration>\r\n\t<appSettings>\r\n\t\t<add key=\"fastgh3_exe_location\" value=\"C:\\Program Files (x86)\\FastGH3\\FastGH3.exe\"/>\r\n\t\t<add key=\"charts_folder\" value=\"\"/>\r\n\t\t<add key=\"ui_theme\" value=\"0\"/>\r\n\t\t<add key=\"auto_scan\" value=\"true\"/>\r\n\t</appSettings>\r\n</configuration>");
+                Thread.Sleep(1000);
+            }
+
             scanFolder = "";
             songList = new List<SongEntry>() { };
             InitializeComponent();
@@ -327,7 +333,7 @@ namespace FGH3ChartBrowser
 
         private void LoadConfig()
         {
-            if (!File.Exists("FGH3ChartBrowser.dll.config")) { File.WriteAllText("FGH3ChartBrowser.dll.config", "<?xml version=\"1.0\" encoding=\"utf-8\" ?>\r\n<configuration>\r\n\t<appSettings>\r\n\t\t<add key=\"fastgh3_exe_location\" value=\"C:\\Program Files (x86)\\FastGH3\\FastGH3.exe\"/>\r\n\t\t<add key=\"charts_folder\" value=\"\"/>\r\n\t\t<add key=\"ui_theme\" value=\"0\"/>\r\n\t\t<add key=\"auto_scan\" value=\"true\"/>\r\n\t</appSettings>\r\n</configuration>"); }
+            
             FGH3_Path_TxtBox.Text = Settings.Config.AppSettings.Settings["fastgh3_exe_location"].Value;
             if (String.IsNullOrEmpty(FGH3_Path_TxtBox.Text))
             {
@@ -660,7 +666,7 @@ namespace FGH3ChartBrowser
 
         public static string RemoveHtml(string input)
         {
-            return Regex.Replace(input, "<[a-zA-Z/].*?>", String.Empty);
+            return Regex.Replace(input, "<[a-zA-Z/].*?>", String.Empty).Trim();
         }
 
         private void ChartsPathBrowseBtn_Click(object sender, RoutedEventArgs e)
@@ -753,7 +759,7 @@ namespace FGH3ChartBrowser
         private void FGH3SettingsBtn_Click(object sender, RoutedEventArgs e)
         {
             if (System.IO.Path.Exists(FGH3_Path_TxtBox.Text))
-                System.Diagnostics.Process.Start(FGH3_Path_TxtBox.Text, "-settings");
+                Process.Start(FGH3_Path_TxtBox.Text, "-settings");
         }
 
         [System.Runtime.InteropServices.DllImport("gdi32.dll")]
@@ -880,9 +886,9 @@ namespace FGH3ChartBrowser
                     FileInfo fileInfo = new FileInfo(song.Path);
                     string songDir = "" + fileInfo.Directory?.FullName;
                     if (File.Exists(song.Path))
-                        System.Diagnostics.Process.Start("explorer.exe", $"/select, \"{song.Path}\"");
+                        Process.Start("explorer.exe", $"/select, \"{song.Path}\"");
                     else
-                        System.Diagnostics.Process.Start("explorer.exe", songDir);
+                        Process.Start("explorer.exe", songDir);
                 }
             }
         }

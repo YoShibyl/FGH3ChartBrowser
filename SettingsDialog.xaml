@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FGH3ChartBrowser"
         mc:Ignorable="d"
-        Title="Chart Browser Settings" Height="329" Width="441">
+        Title="Chart Browser Settings" Height="360" Width="441">
     <Grid>
         <Button x:Name="CancelBtn" Content="USERS CAN'T SEE THIS" Margin="-160,-68,0,0" VerticalAlignment="Top" Foreground="#FF797979" IsCancel="True" Click="CancelBtn_Click" IsTabStop="False"/>
         <ComboBox x:Name="ciCombo" HorizontalAlignment="Left" Margin="136,10,0,0" VerticalAlignment="Top" Width="86" SelectionChanged="ComboBox_SelectionChanged">
@@ -46,6 +46,6 @@
         </Rectangle>
         <Label Content="(Blue)" HorizontalAlignment="Center" Margin="0,187,0,0" VerticalAlignment="Top" FontSize="9"/>
         <Label Content="Focus on filter/search bar" HorizontalAlignment="Left" Margin="238,212,0,0" VerticalAlignment="Top"/>
-
+        <Label Content="This tool was made by Yoshibyl (a.k.a. &quot;Yoshi&quot;)" HorizontalAlignment="Left" Margin="10,0,0,42" VerticalAlignment="Bottom" FontSize="11"/>
     </Grid>
 </Window>

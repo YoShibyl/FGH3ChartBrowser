@@ -8,10 +8,10 @@
     <UseWPF>true</UseWPF>
     <PackageIcon>icon.png</PackageIcon>
     <ApplicationIcon>favicon.ico</ApplicationIcon>
-    <AssemblyVersion>1.4.0</AssemblyVersion>
-    <FileVersion>1.4.0</FileVersion>
+    <AssemblyVersion>$(Version)</AssemblyVersion>
+    <FileVersion>$(Version)</FileVersion>
     <Configurations>Debug;Release</Configurations>
-    <Version>$(VersionPrefix)1.4.0</Version>
+    <Version>$(VersionPrefix)1.4.1</Version>
 	<NoWarn>$(NoWarn);WPF0001</NoWarn>
   </PropertyGroup>
 
