@@ -7,9 +7,8 @@
         mc:Ignorable="d"
         Title="Chart Browser Settings" Height="360" Width="441">
     <Grid>
-        <Button x:Name="CancelBtn" Content="USERS CAN'T SEE THIS" Margin="-160,-68,0,0" VerticalAlignment="Top" Foreground="#FF797979" IsCancel="True" Click="CancelBtn_Click" IsTabStop="False"/>
         <ComboBox x:Name="ciCombo" HorizontalAlignment="Left" Margin="136,10,0,0" VerticalAlignment="Top" Width="86" SelectionChanged="ComboBox_SelectionChanged">
-            <ComboBoxItem Content="0"/>
+        <ComboBoxItem Content="0"/>
             <ComboBoxItem Content="1"/>
             <ComboBoxItem Content="2"/>
             <ComboBoxItem Content="3"/>
@@ -37,8 +36,7 @@
         </Rectangle>
         <Label Content="(Orange)" HorizontalAlignment="Left" Margin="236,132,0,0" VerticalAlignment="Top" FontSize="9"/>
         <Label Content="Hold to scroll more" HorizontalAlignment="Left" Margin="271,157,0,0" VerticalAlignment="Top"/>
-        <Label x:Name="Watermark" Content="https://github.com/YoShibyl/FGH3ChartBrowser" HorizontalAlignment="Left" Margin="10,0,0,17" VerticalAlignment="Bottom" Foreground="#FF1899FF"/>
-        <Button x:Name="WatermarkBtn" Content="Button" Margin="10,0,0,13" VerticalAlignment="Bottom" Height="30" Width="312" Foreground="{x:Null}" Click="WatermarkBtn_Click" Opacity="0"/>
+        
         <Rectangle HorizontalAlignment="Center" Height="38" Margin="0,203,0,0" VerticalAlignment="Top" Width="25">
             <Rectangle.Fill>
                 <ImageBrush ImageSource="/GHFretBlue.png" Stretch="Uniform"/>
@@ -46,6 +44,12 @@
         </Rectangle>
         <Label Content="(Blue)" HorizontalAlignment="Center" Margin="0,187,0,0" VerticalAlignment="Top" FontSize="9"/>
         <Label Content="Focus on filter/search bar" HorizontalAlignment="Left" Margin="238,212,0,0" VerticalAlignment="Top"/>
+        <Button x:Name="CancelBtn" Content="USERS CAN'T SEE THIS BUTTON" Margin="13,-81,0,0" VerticalAlignment="Top" Foreground="#FF797979" IsCancel="True" Click="CancelBtn_Click" IsTabStop="False"/>
+        
         <Label Content="This tool was made by Yoshibyl (a.k.a. &quot;Yoshi&quot;)" HorizontalAlignment="Left" Margin="10,0,0,42" VerticalAlignment="Bottom" FontSize="11"/>
+        <Label x:Name="Watermark" Content="https://github.com/YoShibyl/FGH3ChartBrowser" HorizontalAlignment="Left" Margin="10,0,0,17" VerticalAlignment="Bottom" Foreground="#FF1899FF"/>
+        <Button x:Name="WatermarkBtn" Content="Button" Margin="10,0,0,13" VerticalAlignment="Bottom" Height="30" Width="312" Foreground="{x:Null}" Click="WatermarkBtn_Click" Opacity="0"/>
+                
+                
     </Grid>
 </Window>

@@ -92,6 +92,7 @@ namespace FGH3ChartBrowser
             SongsDataGrid.ItemsSource = songList;
             ScanBgWorker = new BackgroundWorker();
             ScanBgWorker.WorkerReportsProgress = true;
+            ScanBgWorker.WorkerSupportsCancellation = true;
             ScanBgWorker.DoWork += ScanSongs;
             ScanBgWorker.ProgressChanged += UpdateScanProgress;
             ScanBgWorker.RunWorkerCompleted += FinishedScanning;
@@ -115,7 +116,7 @@ namespace FGH3ChartBrowser
             pressTimeRepeat = DateTime.Now.Ticks / 10000;
 
             DispatcherTimer inputTimer = new DispatcherTimer();
-            inputTimer.Interval = TimeSpan.FromMilliseconds(5);
+            inputTimer.Interval = TimeSpan.FromMilliseconds(1);
             inputTimer.Tick += InputTimer_Tick;
             inputTimer.Start();
 
@@ -133,7 +134,7 @@ namespace FGH3ChartBrowser
             return windowHandle == foregroundWindow;
         }
 
-        // Loop runs roughly every 5 ms (about 200x per second)
+        // Loop runs roughly every millisecond (about 1000x per second)
         private void InputTimer_Tick(object? sender, EventArgs e)
         {
             if (System.Diagnostics.Process.GetProcessesByName("game").Length < 1
@@ -142,7 +143,6 @@ namespace FGH3ChartBrowser
             else PlaySongBtn.IsEnabled = false;
            
             bool connected = XInput.GetState(Settings.controllerIndex, out State state);
-            bool foundInput = false;
             if (connected && IsForeground())
             {
                 GamepadButtons buttons = state.Gamepad.Buttons;
@@ -166,7 +166,6 @@ namespace FGH3ChartBrowser
                     pressTimeDpadD = DateTime.Now.Ticks;
                     StrumDown(scroll);
                     isPressingD = true;
-                    foundInput = true;
                 }
                 else if (isPressingD && !state.Gamepad.Buttons.HasFlag(GamepadButtons.DPadDown))
                 {
@@ -179,7 +178,6 @@ namespace FGH3ChartBrowser
                     pressTimeDpadU = DateTime.Now.Ticks;
                     StrumUp(scroll);
                     isPressingU = true;
-                    foundInput = true;
                 }
                 else if (isPressingU && !state.Gamepad.Buttons.HasFlag(GamepadButtons.DPadUp))
                 {
@@ -364,12 +362,15 @@ namespace FGH3ChartBrowser
 
             if (Settings.AutoScan && Directory.Exists(scanFolder))
             {
-                ScanChartsBtn.IsEnabled = false;
-                ScanChartsBtn.Content = "Scanning...";
-                ChartsPathBrowseBtn.IsEnabled = false;
-                Chart_Folder_TxtBox.IsEnabled = false;
-                scanFolder = Chart_Folder_TxtBox.Text;
-                ScanBgWorker.RunWorkerAsync();
+                if (Directory.Exists(Chart_Folder_TxtBox.Text))
+                {
+                    ScanProgressTxt.Text = "Scanning...";
+                    ScanChartsBtn.Content = "Cancel Scan";
+                    ChartsPathBrowseBtn.IsEnabled = false;
+                    Chart_Folder_TxtBox.IsEnabled = false;
+                    scanFolder = Chart_Folder_TxtBox.Text;
+                    ScanBgWorker.RunWorkerAsync();
+                }
             }
         }
 
@@ -406,11 +407,16 @@ namespace FGH3ChartBrowser
                 totalSongs = charts.Count<string>() + midis.Count<string>() + sngs.Count<string>();
                 if (totalSongs > 0)
                 {
-                    songList.Clear();
+                    List<SongEntry> tmpSongList = new List<SongEntry>();
                     scannedSongs = 0;
                     scanErrors = 0;
                     foreach (string chart in charts)
                     {
+                        if (bw.CancellationPending)
+                        {
+                            e.Cancel = true;
+                            return;
+                        }
                         FileInfo fileInfo = new FileInfo(chart);
                         string chartDir = "" + fileInfo.Directory?.FullName;
                         string[] songIniFiles = Directory.GetFiles(chartDir, "song.ini", SearchOption.TopDirectoryOnly);
@@ -457,7 +463,7 @@ namespace FGH3ChartBrowser
                                 songEntry.Year = year;
                                 songEntry.Path = chart;
                                 songEntry.LoadingPhrase = loadingPhrase;
-                                songList.Add(songEntry);
+                                tmpSongList.Add(songEntry);
                                 
                                 scannedSongs++;
                             }
@@ -472,6 +478,11 @@ namespace FGH3ChartBrowser
                     }
                     foreach (string midi in midis)
                     {
+                        if (bw.CancellationPending)
+                        {
+                            e.Cancel = true;
+                            return;
+                        }
                         FileInfo fileInfo = new FileInfo(midi);
                         string chartDir = "" + fileInfo.Directory?.FullName;
                         string[] songIniFiles = Directory.GetFiles(chartDir, "song.ini", SearchOption.TopDirectoryOnly);
@@ -517,7 +528,7 @@ namespace FGH3ChartBrowser
                                 songEntry.Year = year;
                                 songEntry.Path = midi;
                                 songEntry.LoadingPhrase = loadingPhrase;
-                                songList.Add(songEntry);
+                                tmpSongList.Add(songEntry);
 
                                 scannedSongs++;
                             }
@@ -533,6 +544,11 @@ namespace FGH3ChartBrowser
                     }
                     foreach (string sngPath in sngs)
                     {
+                        if (bw.CancellationPending)
+                        {
+                            e.Cancel = true;
+                            return;
+                        }
                         FileInfo fileInfo = new FileInfo(sngPath);
                         SongEntry songEntry = new SongEntry(sngPath);
                         songEntry.Genre = "";
@@ -580,12 +596,18 @@ namespace FGH3ChartBrowser
                             songEntry.Album = "Unknown Album";
                             songEntry.Charter = "Unknown Charter";
                             scanErrors++;
+                            totalSongs--;
                         }
                         songEntry.Path = sngPath;
-                        songList.Add(songEntry);
+                        tmpSongList.Add(songEntry);
                         scannedSongs++;
                         scanProgress = 100 * scannedSongs / totalSongs;
                         bw.ReportProgress(scanProgress);
+                    }
+                    if (!bw.CancellationPending)
+                    {
+                        songList.Clear();
+                        songList = tmpSongList;
                     }
                 }
             }
@@ -594,22 +616,29 @@ namespace FGH3ChartBrowser
         private void UpdateScanProgress(object? sender, ProgressChangedEventArgs e)
         {
             ScanProgressBar.Value = e.ProgressPercentage;
-            ScanProgressTxt.Text = $"{scannedSongs} / {totalSongs}";
+            ScanProgressTxt.Text = $"Scanning...  {scannedSongs} / {totalSongs}";
         }
 
         private void FinishedScanning(object? sender, RunWorkerCompletedEventArgs e)
         {
             SongsDataGrid.IsEnabled = true;
             SongsDataGrid.ItemsSource = songList;
-            CollectionViewSource.GetDefaultView(SongsDataGrid.ItemsSource).Filter = this.SongFilter;
-            ScanProgressBar.Value = 100;
-            ScanProgressTxt.Text = $"{songList.Count} songs found";
-            if (scanErrors > 0) ScanProgressTxt.Text += $" ({scanErrors} errors)";
+            ScanChartsBtn.Content = "Scan Songs";
+            ScanChartsBtn.IsCancel = false;
             ChartsPathBrowseBtn.IsEnabled = true;
             Chart_Folder_TxtBox.IsEnabled = true;
-            ScanChartsBtn.Content = "Scan Songs";
-            ScanChartsBtn.IsEnabled = true;
-            SortDataGrid(SongsDataGrid, 1);
+            if (!e.Cancelled)
+            {
+                CollectionViewSource.GetDefaultView(SongsDataGrid.ItemsSource).Filter = this.SongFilter;
+                ScanProgressBar.Value = 100;
+                ScanProgressTxt.Text = $"{songList.Count} songs found";
+                if (scanErrors > 0) ScanProgressTxt.Text += $" ({scanErrors} errors)";
+                SortDataGrid(SongsDataGrid, 1);
+            }
+            else
+            {
+                ScanProgressTxt.Text = "Scan cancelled";
+            }
         }
 
         public static void SortDataGrid(DataGrid dataGrid, int columnIndex = 0, ListSortDirection sortDirection = ListSortDirection.Ascending)
@@ -654,14 +683,26 @@ namespace FGH3ChartBrowser
 
         private void ScanChartsBtn_Click(object sender, RoutedEventArgs e)
         {
-            ScanChartsBtn.IsEnabled = false;
-            ScanChartsBtn.Content = "Scanning...";
-            ChartsPathBrowseBtn.IsEnabled = false;
-            Chart_Folder_TxtBox.IsEnabled = false;
+            if (String.IsNullOrWhiteSpace(Chart_Folder_TxtBox.Text))
+            {
+                MessageBox.Show("You must specify a folder to scan for songs.\nClick the Browse for Folder button and select a folder containing charts.", "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+            }
+            else if (Directory.Exists(Chart_Folder_TxtBox.Text))
+            {
+                ScanChartsBtn.Content = "Cancel Scan";
+                ScanChartsBtn.IsCancel = true;
+                ChartsPathBrowseBtn.IsEnabled = false;
+                Chart_Folder_TxtBox.IsEnabled = false;
 
-            scanFolder = Chart_Folder_TxtBox.Text;
+                scanFolder = Chart_Folder_TxtBox.Text;
 
-            ScanBgWorker.RunWorkerAsync();
+                if (ScanBgWorker.IsBusy) { ScanBgWorker.CancelAsync(); }
+                else { ScanBgWorker.RunWorkerAsync(); }
+            }
+            else
+            {
+                MessageBox.Show($"Folder not found: {Chart_Folder_TxtBox.Text}", "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+            }
         }
 
         public static string RemoveHtml(string input)
@@ -675,9 +716,16 @@ namespace FGH3ChartBrowser
             Nullable<bool> result = dlg.ShowDialog();
             if (result.HasValue && result.Value)
             {
-                Chart_Folder_TxtBox.Text = dlg.FolderName;
-                Settings.Config.AppSettings.Settings["charts_folder"].Value = dlg.FolderName;
-                Settings.Config.Save();
+                if (Chart_Folder_TxtBox.Text != dlg.FolderName) 
+                {
+                    Chart_Folder_TxtBox.Text = dlg.FolderName;
+                    Settings.Config.AppSettings.Settings["charts_folder"].Value = dlg.FolderName;
+                    Settings.Config.Save();
+                    if (Settings.GetAutoScan())
+                    {
+                        // auto scan
+                    }
+                }
             }
         }
 

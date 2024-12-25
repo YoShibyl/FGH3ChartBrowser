@@ -11,7 +11,7 @@
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
     <Configurations>Debug;Release</Configurations>
-    <Version>$(VersionPrefix)1.4.1</Version>
+    <Version>$(VersionPrefix)1.4.2</Version>
 	<NoWarn>$(NoWarn);WPF0001</NoWarn>
   </PropertyGroup>
 
