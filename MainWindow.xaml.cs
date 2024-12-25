@@ -366,6 +366,7 @@ namespace FGH3ChartBrowser
                 {
                     ScanProgressTxt.Text = "Scanning...";
                     ScanChartsBtn.Content = "Cancel Scan";
+                    ScanChartsBtn.IsCancel = true;
                     ChartsPathBrowseBtn.IsEnabled = false;
                     Chart_Folder_TxtBox.IsEnabled = false;
                     scanFolder = Chart_Folder_TxtBox.Text;
