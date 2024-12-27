@@ -2,24 +2,24 @@
 This is a simple tool for quickly scanning and loading custom Guitar Hero songs in [FastGH3](https://github.com/donnaken15/FastGH3).
 
 <details>
-  <summary>Screenshot (v1.4.0 Dark Mode)</summary>
+  <summary>Screenshot (v1.4 Dark Mode)</summary>
 
   ![image](https://github.com/user-attachments/assets/cafbea4f-5ef7-4bd2-9749-ec047f1d9161)
 
 </details>
 <details>
-<summary>Screenshot (v1.2.2 Legacy)</summary>
+<summary>Screenshot (v1.4 Legacy)</summary>
   
-  ![image](https://github.com/user-attachments/assets/1c315181-e215-474d-89bd-30ce71d0a976)
+  ![image](https://github.com/user-attachments/assets/7b0a6057-1135-4dab-82c0-01e763ffc090)
 
 </details>
 
-## Prerequisites (v1.3.0 and up)
+## Prerequisites
 - Windows 10 22H2 or newer
-- [.NET Desktop Runtime 9.0](https://dotnet.microsoft.com/en-us/download/dotnet/9.0) (Probably required, since v1.3.0+ is built with .NET 9)
+- [.NET Desktop Runtime 9.0](https://dotnet.microsoft.com/en-us/download/dotnet/9.0) **(Legacy edition requires .NET 8.0 instead)**
 - [FastGH3](https://github.com/donnaken15/FastGH3)
 
-If you can't get v1.3.0 or newer to launch, then either install .NET 9 or try [v1.2.2](https://github.com/YoShibyl/FGH3ChartBrowser/releases/tag/v1.2.2) instead.
+If you can't get v1.3.0 or newer to launch, then either install .NET 9 or try the Legacy edition instead.
 
 ## How to use
 
@@ -35,7 +35,6 @@ As of v1.4.0, you can use an Xinput gamepad (such as a guitar controller) to scr
 
 ## Planned features
 - Storing scan results for later
-- ~~Guitar controller navigation?~~ Done (v1.4.0)
 
 ## Credits
 - [donnaken15](https://github.com/donnaken15) : Maker of [FastGH3](https://github.com/donnaken15/FastGH3)
