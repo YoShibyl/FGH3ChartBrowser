@@ -1,0 +1,87 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:FGH3ChartBrowser"
+        x:Name="MainWin" x:Class="FGH3ChartBrowser.MainWindow"
+        mc:Ignorable="d"
+        ThemeMode="System"
+        Title="FastGH3 Chart Browser" Width="803" ResizeMode="CanMinimize" Icon="/icon.png" Height="620">
+    <Grid Margin="0,0,10,10" UseLayoutRounding="False">
+        <Label Content="FastGH3 path:" HorizontalAlignment="Left" Margin="10,15,0,0" VerticalAlignment="Top" Width="84" Background="{x:Null}"/>
+        <TextBox x:Name="FGH3_Path_TxtBox" HorizontalAlignment="Left" Margin="104,9,0,0" Text="C:\Program Files (x86)\FastGH3\FastGH3.exe" VerticalAlignment="Top" Width="261" VerticalContentAlignment="Center" BorderBrush="Gray" FontFamily="Segoe UI" FontSize="11"/>
+        <Button x:Name="GH3PathBrowseBtn" Content="Browse for FastGH3.exe" Margin="370,9,0,0" VerticalAlignment="Top" Width="151" Click="GH3PathBrowseBtn_Click" UseLayoutRounding="False" BorderBrush="Gray" FontFamily="Segoe UI" FontSize="11"/>
+        <Label Content="Charts folder:" HorizontalAlignment="Left" Margin="10,44,0,0" VerticalAlignment="Top" Width="81"/>
+        <TextBox x:Name="Chart_Folder_TxtBox" HorizontalAlignment="Left" Margin="104,40,0,0" VerticalAlignment="Top" Width="261" BorderBrush="Gray" FontFamily="Segoe UI" FontSize="11"/>
+        <Button x:Name="ChartsPathBrowseBtn" Content="Browse for Folder" Margin="370,40,0,0" VerticalAlignment="Top" Width="151" Click="ChartsPathBrowseBtn_Click" BorderBrush="Gray" FontFamily="Segoe UI" FontSize="11"/>
+        <Button x:Name="ScanChartsBtn" Content="Scan Songs" Margin="531,9,0,0" VerticalAlignment="Top" FontSize="19" Click="ScanChartsBtn_Click" Height="41" Width="245" BorderBrush="Gray"/>
+
+        <TextBox x:Name="SearchTxtBox" HorizontalAlignment="Left" Margin="246,73,0,0" VerticalAlignment="Top" Width="275" FontSize="14" VerticalContentAlignment="Center" TextChanged="SearchTxtBox_TextChanged" BorderBrush="Gray"/>
+        <Button x:Name="PlaySongBtn" VerticalAlignment="Top" FontSize="28" RenderTransformOrigin="0.5,0.5" Click="PlaySongBtn_Click" Margin="246,504,0,0" Height="67" Width="530" UseLayoutRounding="False" BorderBrush="Gray">
+            <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Rectangle Grid.Column="0" x:Name="StartButton" Width="48" Height="48" HorizontalAlignment="Left" VerticalAlignment="Center" StrokeThickness="0">
+                    <Rectangle.Fill>
+                        <ImageBrush ImageSource="/GHStartButton.png"/>
+                    </Rectangle.Fill>
+
+                </Rectangle>
+                <Label Grid.Column="1" Content=" Play Song " VerticalAlignment="Center" />
+            </Grid>
+        </Button>
+        <DataGrid x:Name="SongsDataGrid" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="245,110,0,0" AutoGenerateColumns="False" Height="224" IsReadOnly="True" Width="531" HorizontalAlignment="Left" VerticalAlignment="Top" ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Visible" SelectionMode="Single" ScrollViewer.HorizontalScrollBarVisibility="Visible" RowHeaderWidth="0" SelectionChanged="SongsDataGrid_SelectionChanged" MouseDoubleClick="SongsDataGrid_MouseDoubleClick" UseLayoutRounding="False" VerticalContentAlignment="Center" RowHeight="24" ColumnHeaderHeight="24" BorderBrush="Gray">
+            <DataGrid.Columns>
+                <DataGridTextColumn x:Name="ArtistColumn" Header="Artist" Binding="{Binding Artist}" MaxWidth="180"/>
+                <DataGridTextColumn x:Name="TitleColumn"  Header="Title" Binding="{Binding Title}" MaxWidth="300"/>
+                <DataGridTextColumn Header="Album" MaxWidth="180" Binding="{Binding Album}"/>
+                <DataGridTextColumn Header="Genre" Binding="{Binding Genre}"/>
+                <DataGridTextColumn x:Name="CharterColumn" Header="Charter" Binding="{Binding Charter}" MaxWidth="150"/>
+                <DataGridTextColumn x:Name="ChartPathColumn" Header="Path to Chart" Binding="{Binding Path}" MinWidth="800" />
+            </DataGrid.Columns>
+            <DataGrid.ContextMenu>
+                <ContextMenu StaysOpen="True" Opened="SongsDataGrid_ContextOpened">
+                    <MenuItem x:Name="PlaySongCtxMenuItem" Header="Play song" Click="PlaySongBtn_Click"/>
+                    <MenuItem x:Name="OpenExplorerCtxMenuItem" Header="Open song in Explorer" Click="OpenInExplorerBtn_Click"/>
+                </ContextMenu>
+            </DataGrid.ContextMenu>
+        </DataGrid>
+        <Label Content="Filter Songs:" HorizontalAlignment="Left" Margin="160,79,0,0" VerticalAlignment="Top" FontSize="14"/>
+        <ProgressBar x:Name="ScanProgressBar" HorizontalAlignment="Left" Height="12" Margin="531,52,0,0" VerticalAlignment="Top" Width="245" Value="69" Background="#00808080" Foreground="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" BorderBrush="#00000000"/>
+        <Button x:Name="FGH3SettingsBtn" Content="Open FastGH3 Settings" Margin="11,540,0,0" VerticalAlignment="Top" Width="230" Click="FGH3SettingsBtn_Click" BorderBrush="Gray" Height="31"/>
+        <Rectangle HorizontalAlignment="Left" Height="224" Margin="11,110,0,0" VerticalAlignment="Top" Width="224" Fill="#33000000"/>
+        <Rectangle x:Name="AlbumRect" HorizontalAlignment="Left" Height="224" Margin="11,110,0,0" VerticalAlignment="Top" Width="224" Visibility="Hidden"/>
+        <TextBlock x:Name="SongTitleTxt" Text="Lorem ipsum odor amet, consectetuer adipiscing elit. Ligula sodales eros malesuada a nulla inceptos. Et phasellus volutpat dictum torquent pulvinar felis tempor ultricies fringilla. Nec parturient nunc leo; nostra fermentum etiam class. Tempor pharetra sapien metus at sagittis magnis. Faucibus fermentum efficitur commodo maecenas molestie facilisis. Felis rutrum litora aenean phasellus donec. Est suscipit luctus dictum conubia fringilla. Pulvinar erat proin justo sit ridiculus. Felis mollis sagittis consectetur accumsan quis curabitur; lacus erat. Lacus iaculis gravida leo urna at pharetra tincidunt. Consequat imperdiet ad, rhoncus ac neque bibendum inceptos ultrices. Phasellus senectus etiam semper at fringilla imperdiet nisl ipsum nulla. Enim vehicula egestas fames curabitur mollis lobortis integer sem." Margin="259,344,25,0" VerticalAlignment="Top" FontSize="16" FontWeight="SemiBold" TextAlignment="Center" TextTrimming="CharacterEllipsis"/>
+        <Button x:Name="AlbumClickBtn" Content="" HorizontalAlignment="Left" Margin="13,113,0,0" VerticalAlignment="Top" Height="221" Width="221" Click="AlbumClick" ScrollViewer.VerticalScrollBarVisibility="Disabled" Opacity="0" Visibility="Collapsed" IsTabStop="False">
+            <Button.ContextMenu>
+                <ContextMenu Name="AlbumMenu" StaysOpen="true" Opened="AlbumMenu_Opened">
+                    <MenuItem Header="Copy image" Click="CopyAlbumArtToClipboard"/>
+                </ContextMenu>
+            </Button.ContextMenu>
+        </Button>
+        <Button x:Name="OpenInExplorerBtn" Content="Open Song in Explorer" Margin="10,504,0,0" VerticalAlignment="Top" Click="OpenInExplorerBtn_Click" Width="231" BorderBrush="Gray" Height="31"/>
+        <TextBlock x:Name="ArtistTxt" HorizontalAlignment="Left" Margin="10,344,0,0" TextWrapping="Wrap" Text="Lorem ipsum odor amet, consectetuer adipiscing elit. Ligula sodales eros malesuada a nulla inceptos. Et phasellus volutpat dictum torquent pulvinar felis tempor ultricies fringilla. Nec parturient nunc leo; nostra fermentum etiam class. Tempor pharetra sapien metus at sagittis magnis. Faucibus fermentum efficitur commodo maecenas molestie facilisis. Felis rutrum litora aenean phasellus donec. Est suscipit luctus dictum conubia fringilla. Pulvinar erat proin justo sit ridiculus. Felis mollis sagittis consectetur accumsan quis curabitur; lacus erat. Lacus iaculis gravida leo urna at pharetra tincidunt. Consequat imperdiet ad, rhoncus ac neque bibendum inceptos ultrices. Phasellus senectus etiam semper at fringilla imperdiet nisl ipsum nulla. Enim vehicula egestas fames curabitur mollis lobortis integer sem." VerticalAlignment="Top" Width="223" FontSize="16" TextAlignment="Center" Height="44" MaxHeight="44" TextTrimming="CharacterEllipsis" FontWeight="SemiBold"/>
+        <TextBlock x:Name="AlbumTxt" Text="Album:  Lorem ipsum odor amet, consectetuer adipiscing elit. Ligula sodales eros malesuada a nulla inceptos. Et phasellus volutpat dictum torquent pulvinar felis tempor ultricies fringilla. Nec parturient nunc leo; nostra fermentum etiam class. Tempor pharetra sapien metus at sagittis magnis. Faucibus fermentum efficitur commodo maecenas molestie facilisis. Felis rutrum litora aenean phasellus donec. Est suscipit luctus dictum conubia fringilla. Pulvinar erat proin justo sit ridiculus. Felis mollis sagittis consectetur accumsan quis curabitur; lacus erat. Lacus iaculis gravida leo urna at pharetra tincidunt. Consequat imperdiet ad, rhoncus ac neque bibendum inceptos ultrices. Phasellus senectus etiam semper at fringilla imperdiet nisl ipsum nulla. Enim vehicula egestas fames curabitur mollis lobortis integer sem." HorizontalAlignment="Left" Margin="10,394,0,0" VerticalAlignment="Top" Width="221" TextTrimming="CharacterEllipsis" FontSize="11"/>
+        <Label x:Name="YearTxt" Content="Year:  42069" HorizontalAlignment="Left" Margin="172,413,0,0" VerticalAlignment="Top" Width="71" FontSize="11"/>
+        <TextBlock x:Name="GenreTxt" Text="Genre:  Lorem ipsum odor amet, consectetuer adipiscing elit. Ligula sodales eros malesuada a nulla inceptos. Et phasellus volutpat dictum torquent pulvinar felis tempor ultricies fringilla. Nec parturient nunc leo; nostra fermentum etiam class. Tempor pharetra sapien metus at sagittis magnis. Faucibus fermentum efficitur commodo maecenas molestie facilisis. Felis rutrum litora aenean phasellus donec. Est suscipit luctus dictum conubia fringilla. Pulvinar erat proin justo sit ridiculus. Felis mollis sagittis consectetur accumsan quis curabitur; lacus erat. Lacus iaculis gravida leo urna at pharetra tincidunt. Consequat imperdiet ad, rhoncus ac neque bibendum inceptos ultrices. Phasellus senectus etiam semper at fringilla imperdiet nisl ipsum nulla. Enim vehicula egestas fames curabitur mollis lobortis integer sem." HorizontalAlignment="Left" Margin="10,413,0,0" VerticalAlignment="Top" Width="157" TextTrimming="CharacterEllipsis" FontSize="11"/>
+        <Label x:Name="LeadDiffTxt" Content="Lead Intensity:  99+" HorizontalAlignment="Left" Margin="10,454,0,0" VerticalAlignment="Top" Width="114" FontSize="11"/>
+        <Label x:Name="BassDiffTxt" Content="Bass Intensity:  99+" HorizontalAlignment="Left" Margin="12,474,0,0" VerticalAlignment="Top" Width="112" FontSize="11"/>
+        <Label x:Name="LeadStarsTxt" Content="★★★★★★★★★+" HorizontalAlignment="Left" Margin="132,452,0,0" VerticalAlignment="Top" FontSize="13"/>
+        <Label x:Name="BassStarsTxt" Content="★★★★★★★★★+" HorizontalAlignment="Left" Margin="132,472,0,0" VerticalAlignment="Top" FontSize="13"/>
+        <TextBlock x:Name="ScanProgressTxt" HorizontalAlignment="Left" Margin="536,64,0,0" TextWrapping="Wrap" Text="Click &quot;Scan Songs&quot; to find songs!" VerticalAlignment="Top" Width="235" TextAlignment="Center" FontSize="9"/>
+        <TextBlock x:Name="CharterTxt" Text="Charter:  Lorem ipsum odor amet, consectetuer adipiscing elit. Ligula sodales eros malesuada a nulla inceptos. Et phasellus volutpat dictum torquent pulvinar felis tempor ultricies fringilla. Nec parturient nunc leo; nostra fermentum etiam class. Tempor pharetra sapien metus at sagittis magnis. Faucibus fermentum efficitur commodo maecenas molestie facilisis. Felis rutrum litora aenean phasellus donec. Est suscipit luctus dictum conubia fringilla. Pulvinar erat proin justo sit ridiculus. Felis mollis sagittis consectetur accumsan quis curabitur; lacus erat. Lacus iaculis gravida leo urna at pharetra tincidunt. Consequat imperdiet ad, rhoncus ac neque bibendum inceptos ultrices. Phasellus senectus etiam semper at fringilla imperdiet nisl ipsum nulla. Enim vehicula egestas fames curabitur mollis lobortis integer sem." HorizontalAlignment="Left" Margin="10,432,0,0" VerticalAlignment="Top" Width="224" TextTrimming="CharacterEllipsis" FontSize="11"/>
+        <ComboBox x:Name="ThemeSwitcher" HorizontalAlignment="Left" Margin="65,73,0,0" VerticalAlignment="Top" Width="90" BorderBrush="Gray" SelectionChanged="ThemeSwitcher_SelectionChanged" FontSize="10.5" Height="32" SelectedIndex="0">
+            <ComboBoxItem Content="System"/>
+            <ComboBoxItem Content="Dark"/>
+            <ComboBoxItem Content="Light"/>
+        </ComboBox>
+        <Label Content="Theme:" HorizontalAlignment="Left" Margin="13,82,0,0" VerticalAlignment="Top" FontSize="10.5"/>
+        <ScrollViewer Margin="248,373,14,101">
+            <TextBlock x:Name="LoadingPhraseTxt" TextAlignment="Center" Text="Lorem ipsum odor amet, consectetuer adipiscing elit. Ligula sodales eros malesuada a nulla inceptos. Et phasellus volutpat dictum torquent pulvinar felis tempor ultricies fringilla. Nec parturient nunc leo; nostra fermentum etiam class. Tempor pharetra sapien metus at sagittis magnis. Faucibus fermentum efficitur commodo maecenas molestie facilisis. Felis rutrum litora aenean phasellus donec. Est suscipit luctus dictum conubia fringilla. Pulvinar erat proin justo sit ridiculus. Felis mollis sagittis consectetur accumsan quis curabitur; lacus erat. Lacus iaculis gravida leo urna at pharetra tincidunt. Consequat imperdiet ad, rhoncus ac neque bibendum inceptos ultrices. Phasellus senectus etiam semper at fringilla imperdiet nisl ipsum nulla. Enim vehicula egestas fames curabitur mollis lobortis integer sem." ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto" TextWrapping="Wrap" Width="495"/>
+        </ScrollViewer>
+        <Button x:Name="OtherSettingsBtn" Content="Other Settings &amp; Info" Margin="531,79,0,0" VerticalAlignment="Top" BorderBrush="Gray" Width="245" FontSize="9" Height="26" Click="OtherSettingsBtn_Click"/>
+    </Grid>
+</Window>

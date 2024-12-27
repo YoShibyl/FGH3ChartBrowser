@@ -1,0 +1,55 @@
+﻿<Window x:Class="FGH3ChartBrowser.SettingsDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:FGH3ChartBrowser"
+        mc:Ignorable="d"
+        Title="Chart Browser Settings" Height="360" Width="441">
+    <Grid>
+        <ComboBox x:Name="ciCombo" HorizontalAlignment="Left" Margin="136,10,0,0" VerticalAlignment="Top" Width="86" SelectionChanged="ComboBox_SelectionChanged">
+        <ComboBoxItem Content="0"/>
+            <ComboBoxItem Content="1"/>
+            <ComboBoxItem Content="2"/>
+            <ComboBoxItem Content="3"/>
+        </ComboBox>
+        <Label Content="Controller index:" HorizontalAlignment="Left" Margin="10,17,0,0" VerticalAlignment="Top"/>
+        <TextBlock HorizontalAlignment="Left" Margin="241,10,0,0" TextWrapping="Wrap" Text="Change this if your Xinput-enabled guitar isn't the only controller connected / isn't controlling the interface." VerticalAlignment="Top" Height="60" Width="174" FontSize="10"/>
+        <CheckBox x:Name="AutoScanChk" Content="Auto scan songs on startup" Margin="10,77,0,0" VerticalAlignment="Top" Unchecked="AutoScanChk_Checked" Checked="AutoScanChk_Checked"/>
+        <Label Content="Controls:" HorizontalAlignment="Left" Margin="10,114,0,0" VerticalAlignment="Top" FontSize="21"/>
+        <Rectangle HorizontalAlignment="Left" Height="50" Margin="10,142,0,0" VerticalAlignment="Top" Width="60">
+            <Rectangle.Fill>
+                <ImageBrush ImageSource="/GHStrumBar.png" Stretch="Uniform"/>
+            </Rectangle.Fill>
+        </Rectangle>
+        <Label Content="Scroll through song list" HorizontalAlignment="Left" Margin="75,157,0,0" VerticalAlignment="Top"/>
+        <Rectangle HorizontalAlignment="Left" Height="50" Margin="10,197,0,0" VerticalAlignment="Top" Width="50">
+            <Rectangle.Fill>
+                <ImageBrush ImageSource="/GHStartButton.png" Stretch="Uniform"/>
+            </Rectangle.Fill>
+        </Rectangle>
+        <Label Content="Play selected song" HorizontalAlignment="Left" Margin="65,212,0,0" VerticalAlignment="Top"/>
+        <Rectangle HorizontalAlignment="Left" Height="38" Margin="241,148,0,0" VerticalAlignment="Top" Width="25">
+            <Rectangle.Fill>
+                <ImageBrush ImageSource="/GHFretOrange.png" Stretch="Uniform"/>
+            </Rectangle.Fill>
+        </Rectangle>
+        <Label Content="(Orange)" HorizontalAlignment="Left" Margin="236,132,0,0" VerticalAlignment="Top" FontSize="9"/>
+        <Label Content="Hold to scroll more" HorizontalAlignment="Left" Margin="271,157,0,0" VerticalAlignment="Top"/>
+        
+        <Rectangle HorizontalAlignment="Center" Height="38" Margin="0,203,0,0" VerticalAlignment="Top" Width="25">
+            <Rectangle.Fill>
+                <ImageBrush ImageSource="/GHFretBlue.png" Stretch="Uniform"/>
+            </Rectangle.Fill>
+        </Rectangle>
+        <Label Content="(Blue)" HorizontalAlignment="Center" Margin="0,187,0,0" VerticalAlignment="Top" FontSize="9"/>
+        <Label Content="Focus on filter/search bar" HorizontalAlignment="Left" Margin="238,212,0,0" VerticalAlignment="Top"/>
+        <Button x:Name="CancelBtn" Content="USERS CAN'T SEE THIS BUTTON" Margin="13,-81,0,0" VerticalAlignment="Top" Foreground="#FF797979" IsCancel="True" Click="CancelBtn_Click" IsTabStop="False"/>
+        
+        <Label Content="This tool was made by Yoshibyl (a.k.a. &quot;Yoshi&quot;)" HorizontalAlignment="Left" Margin="10,0,0,42" VerticalAlignment="Bottom" FontSize="11"/>
+        <Label x:Name="Watermark" Content="https://github.com/YoShibyl/FGH3ChartBrowser" HorizontalAlignment="Left" Margin="10,0,0,17" VerticalAlignment="Bottom" Foreground="#FF1899FF"/>
+        <Button x:Name="WatermarkBtn" Content="Button" Margin="10,0,0,13" VerticalAlignment="Bottom" Height="30" Width="312" Foreground="{x:Null}" Click="WatermarkBtn_Click" Opacity="0"/>
+                
+                
+    </Grid>
+</Window>
