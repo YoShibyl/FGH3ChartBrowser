@@ -139,8 +139,17 @@ namespace FGH3ChartBrowser
         {
             if (System.Diagnostics.Process.GetProcessesByName("game").Length < 1
                 && System.Diagnostics.Process.GetProcessesByName("game!").Length < 1)
+            {
                 PlaySongBtn.IsEnabled = true;
-            else PlaySongBtn.IsEnabled = false;
+                RandomSongBtn.IsEnabled = true;
+                FeelingLuckyBtn.IsEnabled = true;
+            }
+            else
+            {
+                PlaySongBtn.IsEnabled = false;
+                RandomSongBtn.IsEnabled = false;
+                FeelingLuckyBtn.IsEnabled = false;
+            }
            
             bool connected = XInput.GetState(Settings.controllerIndex, out State state);
             if (connected && IsForeground())
@@ -150,6 +159,15 @@ namespace FGH3ChartBrowser
                 if (!isPressingFretB && state.Gamepad.Buttons.HasFlag(GamepadButtons.X))
                 {
                     SearchTxtBox.Focus();
+                }
+                if (!isPressingFretY && state.Gamepad.Buttons.HasFlag(GamepadButtons.Y))
+                {
+                    if (SongsDataGrid.Items.Count > 0)
+                    {
+                        System.Random rand = new System.Random();
+                        SongsDataGrid.SelectedIndex = rand.Next(0, SongsDataGrid.Items.Count);
+                        if (SongsDataGrid.SelectedItem != null) SongsDataGrid.ScrollIntoView(SongsDataGrid.SelectedItem);
+                    }
                 }
 
                 isPressingFretG = state.Gamepad.Buttons.HasFlag(GamepadButtons.A);
@@ -371,6 +389,8 @@ namespace FGH3ChartBrowser
                     ScanChartsBtn.IsCancel = true;
                     ChartsPathBrowseBtn.IsEnabled = false;
                     Chart_Folder_TxtBox.IsEnabled = false;
+                    RandomSongBtn.IsEnabled = false;
+                    FeelingLuckyBtn.IsEnabled = false;
                     scanFolder = Chart_Folder_TxtBox.Text;
                     ScanBgWorker.RunWorkerAsync();
                 }
@@ -630,6 +650,8 @@ namespace FGH3ChartBrowser
             ScanChartsBtn.IsCancel = false;
             ChartsPathBrowseBtn.IsEnabled = true;
             Chart_Folder_TxtBox.IsEnabled = true;
+            RandomSongBtn.IsEnabled = true;
+            FeelingLuckyBtn.IsEnabled = true;
             if (!e.Cancelled)
             {
                 CollectionViewSource.GetDefaultView(SongsDataGrid.ItemsSource).Filter = this.SongFilter;
@@ -696,6 +718,8 @@ namespace FGH3ChartBrowser
                 ScanChartsBtn.IsCancel = true;
                 ChartsPathBrowseBtn.IsEnabled = false;
                 Chart_Folder_TxtBox.IsEnabled = false;
+                RandomSongBtn.IsEnabled = false;
+                FeelingLuckyBtn.IsEnabled = false;
 
                 scanFolder = Chart_Folder_TxtBox.Text;
 
@@ -1008,6 +1032,30 @@ namespace FGH3ChartBrowser
             settingsDialog = new SettingsDialog();
             settingsDialog.ThemeMode = this.ThemeMode;
             settingsDialog.Show();
+        }
+
+        private void RandomSongBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (SongsDataGrid.Items.Count > 0)
+            {
+                System.Random rand = new System.Random();
+                SongsDataGrid.SelectedIndex = rand.Next(0, SongsDataGrid.Items.Count);
+                if (SongsDataGrid.SelectedItem != null) SongsDataGrid.ScrollIntoView(SongsDataGrid.SelectedItem);
+            }
+        }
+
+        private void FeelingLuckyBtn_Click(object sender, RoutedEventArgs e)
+        {
+            if (SongsDataGrid.Items.Count > 0)
+            {
+                System.Random rand = new System.Random();
+                SongsDataGrid.SelectedIndex = rand.Next(0, SongsDataGrid.Items.Count);
+                if (SongsDataGrid.SelectedItem != null) SongsDataGrid.ScrollIntoView(SongsDataGrid.SelectedItem);
+                if (IsForeground() && (DateTime.Now.Ticks - lastLaunchTime) / 10000 >= 2000)
+                {
+                    PlaySong();
+                }
+            }
         }
     }
     public class SongEntry

@@ -1,2 +1,6 @@
 
 FGH3ChartBrowser/.vs/*
+FGH3ChartBrowser/bin/*
+FGH3ChartBrowser/obj/*
+FGH3ChartBrowser_Legacy/bin/*
+FGH3ChartBrowser_Legacy/obj/*

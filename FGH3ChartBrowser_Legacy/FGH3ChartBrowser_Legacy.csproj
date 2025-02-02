@@ -11,12 +11,13 @@
 	<AssemblyVersion>$(Version)</AssemblyVersion>
 	<FileVersion>$(Version)</FileVersion>
 	<Configurations>Debug;Release</Configurations>
-	<Version>$(VersionPrefix)1.4.3</Version>
+	<Version>$(VersionPrefix)1.5.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="GHFretBlue.png" />
     <None Remove="GHFretOrange.png" />
+    <None Remove="GHFretYellow.png" />
     <None Remove="GHStartButton.png" />
     <None Remove="GHStrumBar.png" />
   </ItemGroup>
@@ -30,6 +31,7 @@
 	<ItemGroup>
 	  <Resource Include="GHFretBlue.png" />
 	  <Resource Include="GHFretOrange.png" />
+	  <Resource Include="GHFretYellow.png" />
 	  <Resource Include="GHStartButton.png" />
 	  <Resource Include="GHStrumBar.png" />
 	</ItemGroup>

@@ -18,7 +18,7 @@
         <Button x:Name="ScanChartsBtn" Content="Scan Songs" Margin="531,9,0,0" VerticalAlignment="Top" FontSize="19" Click="ScanChartsBtn_Click" Height="41" Width="245" BorderBrush="Gray"/>
 
         <TextBox x:Name="SearchTxtBox" HorizontalAlignment="Left" Margin="246,73,0,0" VerticalAlignment="Top" Width="275" FontSize="14" VerticalContentAlignment="Center" TextChanged="SearchTxtBox_TextChanged" BorderBrush="Gray"/>
-        <Button x:Name="PlaySongBtn" VerticalAlignment="Top" FontSize="28" RenderTransformOrigin="0.5,0.5" Click="PlaySongBtn_Click" Margin="246,504,0,0" Height="67" Width="530" UseLayoutRounding="False" BorderBrush="Gray">
+        <Button x:Name="PlaySongBtn" VerticalAlignment="Top" FontSize="28" RenderTransformOrigin="0.5,0.5" Click="PlaySongBtn_Click" Margin="246,504,0,0" Height="67" Width="335" UseLayoutRounding="False" BorderBrush="Gray">
             <Grid VerticalAlignment="Center" HorizontalAlignment="Center">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -83,5 +83,12 @@
             <TextBlock x:Name="LoadingPhraseTxt" TextAlignment="Center" Text="Lorem ipsum odor amet, consectetuer adipiscing elit. Ligula sodales eros malesuada a nulla inceptos. Et phasellus volutpat dictum torquent pulvinar felis tempor ultricies fringilla. Nec parturient nunc leo; nostra fermentum etiam class. Tempor pharetra sapien metus at sagittis magnis. Faucibus fermentum efficitur commodo maecenas molestie facilisis. Felis rutrum litora aenean phasellus donec. Est suscipit luctus dictum conubia fringilla. Pulvinar erat proin justo sit ridiculus. Felis mollis sagittis consectetur accumsan quis curabitur; lacus erat. Lacus iaculis gravida leo urna at pharetra tincidunt. Consequat imperdiet ad, rhoncus ac neque bibendum inceptos ultrices. Phasellus senectus etiam semper at fringilla imperdiet nisl ipsum nulla. Enim vehicula egestas fames curabitur mollis lobortis integer sem." ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto" TextWrapping="Wrap" Width="495"/>
         </ScrollViewer>
         <Button x:Name="OtherSettingsBtn" Content="Other Settings &amp; Info" Margin="531,79,0,0" VerticalAlignment="Top" BorderBrush="Gray" Width="245" FontSize="9" Height="26" Click="OtherSettingsBtn_Click"/>
+        <Button x:Name="RandomSongBtn" Margin="611,504,0,0" VerticalAlignment="Top" BorderBrush="Gray" Width="168" FontSize="13" Height="31" Click="RandomSongBtn_Click" Content="Random Song"/>
+        <Rectangle Width="20" HorizontalAlignment="Left" Margin="586,500,0,0" Height="35" VerticalAlignment="Top">
+            <Rectangle.Fill>
+                <ImageBrush Stretch="Uniform" ImageSource="/GHFretYellow.png"/>
+            </Rectangle.Fill>
+        </Rectangle>
+        <Button x:Name="FeelingLuckyBtn" Margin="586,540,0,0" VerticalAlignment="Top" BorderBrush="Gray" Width="193" FontSize="13" Height="31" Click="FeelingLuckyBtn_Click" Content="I'm feeling lucky!"/>
     </Grid>
 </Window>
