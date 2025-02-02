@@ -2,15 +2,15 @@
 This is a simple tool for quickly scanning and loading custom Guitar Hero songs in [FastGH3](https://github.com/donnaken15/FastGH3).
 
 <details>
-  <summary>Screenshot (v1.4 Dark Mode)</summary>
+  <summary>Screenshot (v1.5 Dark Mode)</summary>
 
-  ![image](https://github.com/user-attachments/assets/cafbea4f-5ef7-4bd2-9749-ec047f1d9161)
+  ![image](https://github.com/user-attachments/assets/d28e8368-00ae-4127-963d-349f6059e27e)
 
 </details>
 <details>
-<summary>Screenshot (v1.4 Legacy)</summary>
+<summary>Screenshot (v1.5 Legacy)</summary>
   
-  ![image](https://github.com/user-attachments/assets/7b0a6057-1135-4dab-82c0-01e763ffc090)
+  ![image](https://github.com/user-attachments/assets/b65bd85f-0c5a-4ec2-8077-7e54d0ba6037)
 
 </details>
 
