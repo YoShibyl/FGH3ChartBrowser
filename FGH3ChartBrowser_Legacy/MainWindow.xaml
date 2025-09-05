@@ -59,7 +59,7 @@
         </DataGrid>
         <Label Content="Filter Songs:" HorizontalAlignment="Left" Margin="12,76,0,0" VerticalAlignment="Top" FontSize="14"/>
         <ProgressBar x:Name="ScanProgressBar" HorizontalAlignment="Left" Height="4" Margin="540,55,0,0" VerticalAlignment="Top" Width="228" Value="69" Background="#00808080" Foreground="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" BorderBrush="#00000000"/>
-        <Button x:Name="FGH3SettingsBtn" Content="Open FastGH3 Settings" Margin="10,540,0,0" VerticalAlignment="Top" Click="FGH3SettingsBtn_Click" BorderBrush="Gray" Height="31" HorizontalAlignment="Left" Width="225"/>
+        <Button x:Name="FGH3SettingsBtn" Content="Open FastGH3 Settings Dialog" Margin="10,540,0,0" VerticalAlignment="Top" Click="FGH3SettingsBtn_Click" BorderBrush="Gray" Height="31" HorizontalAlignment="Left" Width="225"/>
         <Rectangle HorizontalAlignment="Left" Height="224" Margin="11,110,0,0" VerticalAlignment="Top" Width="224" Fill="#33000000"/>
         <Rectangle x:Name="AlbumRect" HorizontalAlignment="Left" Height="224" Margin="11,110,0,0" VerticalAlignment="Top" Width="224" Visibility="Hidden"/>
         <TextBlock x:Name="SongTitleTxt" Text="Lorem ipsum odor amet, consectetuer adipiscing elit. Ligula sodales eros malesuada a nulla inceptos. Et phasellus volutpat dictum torquent pulvinar felis tempor ultricies fringilla. Nec parturient nunc leo; nostra fermentum etiam class. Tempor pharetra sapien metus at sagittis magnis. Faucibus fermentum efficitur commodo maecenas molestie facilisis. Felis rutrum litora aenean phasellus donec. Est suscipit luctus dictum conubia fringilla. Pulvinar erat proin justo sit ridiculus. Felis mollis sagittis consectetur accumsan quis curabitur; lacus erat. Lacus iaculis gravida leo urna at pharetra tincidunt. Consequat imperdiet ad, rhoncus ac neque bibendum inceptos ultrices. Phasellus senectus etiam semper at fringilla imperdiet nisl ipsum nulla. Enim vehicula egestas fames curabitur mollis lobortis integer sem." Margin="268,344,35,0" VerticalAlignment="Top" FontSize="16" FontWeight="SemiBold" TextAlignment="Center" TextTrimming="CharacterEllipsis"/>
@@ -91,6 +91,6 @@
                 <ImageBrush Stretch="Uniform" ImageSource="/GHFretYellow.png"/>
             </Rectangle.Fill>
         </Rectangle>
-        <Button x:Name="FeelingLuckyBtn" Margin="586,540,17,0" VerticalAlignment="Top" BorderBrush="Gray" FontSize="13" Height="31" Click="FeelingLuckyBtn_Click" Content="I'm feeling lucky!"/>
+        <Button x:Name="FeelingLuckyBtn" Margin="586,540,17,0" VerticalAlignment="Top" BorderBrush="Gray" FontSize="13" Height="31" Click="FeelingLuckyBtn_Click" Content="I'm feeling lucky!" FontStyle="Italic"/>
     </Grid>
 </Window>

@@ -137,12 +137,21 @@ namespace FGH3ChartBrowser
         // Loop runs roughly every millisecond (about 1000x per second)
         private void InputTimer_Tick(object? sender, EventArgs e)
         {
-            if (System.Diagnostics.Process.GetProcessesByName("game").Length < 1
-                && System.Diagnostics.Process.GetProcessesByName("game!").Length < 1)
+            if (!ScanBgWorker.IsBusy)
             {
-                PlaySongBtn.IsEnabled = true;
-                RandomSongBtn.IsEnabled = true;
-                FeelingLuckyBtn.IsEnabled = true;
+                if (System.Diagnostics.Process.GetProcessesByName("game").Length < 1
+                    && System.Diagnostics.Process.GetProcessesByName("game!").Length < 1)
+                {
+                    PlaySongBtn.IsEnabled = true;
+                    RandomSongBtn.IsEnabled = true;
+                    FeelingLuckyBtn.IsEnabled = true;
+                }
+                else
+                {
+                    PlaySongBtn.IsEnabled = false;
+                    RandomSongBtn.IsEnabled = false;
+                    FeelingLuckyBtn.IsEnabled = false;
+                }
             }
             else
             {
@@ -150,7 +159,7 @@ namespace FGH3ChartBrowser
                 RandomSongBtn.IsEnabled = false;
                 FeelingLuckyBtn.IsEnabled = false;
             }
-           
+
             bool connected = XInput.GetState(Settings.controllerIndex, out State state);
             if (connected && IsForeground())
             {
@@ -202,7 +211,7 @@ namespace FGH3ChartBrowser
                     isPressingU = false;
                 }
             }
-            // handle starting game when pressing green fret
+            // handle starting game when pressing Start button on controller
             if (isPressingStart && !startingGame && IsForeground())
             {
                 startingGame = true;
