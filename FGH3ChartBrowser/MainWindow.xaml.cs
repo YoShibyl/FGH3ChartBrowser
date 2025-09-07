@@ -32,6 +32,8 @@ using System.Reflection;
 using Vortice.XInput;
 using System.Windows.Threading;
 using System.Configuration;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace FGH3ChartBrowser
 {
@@ -100,7 +102,7 @@ namespace FGH3ChartBrowser
             currentLoadingPhrase = "";
             Settings.Config = SysConfig.ConfigurationManager.OpenExeConfiguration(SysConfig.ConfigurationUserLevel.None);
             bmpSrc = new BitmapImage();
-            bmp = new Bitmap(4,4);
+            bmp = new Bitmap(4, 4);
 
             lastLaunchTime = DateTime.Now.Ticks;
             isPressingD = false;
@@ -119,6 +121,10 @@ namespace FGH3ChartBrowser
             inputTimer.Interval = TimeSpan.FromMilliseconds(1);
             inputTimer.Tick += InputTimer_Tick;
             inputTimer.Start();
+
+            baseJsonData = "{}";
+            extraJsonData = "{}";
+            LoadSourceJsons();
 
             LoadConfig();
         }
@@ -171,7 +177,7 @@ namespace FGH3ChartBrowser
                 }
                 if (!isPressingFretY && state.Gamepad.Buttons.HasFlag(GamepadButtons.Y))
                 {
-                    if (SongsDataGrid.Items.Count > 0)
+                    if (SongsDataGrid.Items.Count > 0 && !ScanBgWorker.IsBusy)
                     {
                         System.Random rand = new System.Random();
                         SongsDataGrid.SelectedIndex = rand.Next(0, SongsDataGrid.Items.Count);
@@ -227,7 +233,7 @@ namespace FGH3ChartBrowser
 
             long TimeSincePressD = (DateTime.Now.Ticks - pressTimeDpadD) / 10000;
             long TimeSincePressU = (DateTime.Now.Ticks - pressTimeDpadU) / 10000;
-            
+
             if (DateTime.Now.Ticks / 10000 - pressTimeRepeat >= 42)
             {
                 int scroll = 1;
@@ -271,9 +277,10 @@ namespace FGH3ChartBrowser
         }
         private void StrumUp(int amount = 1)
         {
-            if (!ScanBgWorker.IsBusy) {
+            if (!ScanBgWorker.IsBusy)
             {
-                if (SongsDataGrid.SelectedIndex > 0)
+                {
+                    if (SongsDataGrid.SelectedIndex > 0)
                     {
                         int index = SongsDataGrid.SelectedIndex;
                         index -= amount;
@@ -292,12 +299,12 @@ namespace FGH3ChartBrowser
             LoadingPhraseTxt.Text = song.LoadingPhrase;
             SongTitleTxt.Text = song.Title;
             ArtistTxt.Text = song.Artist;
-            AlbumTxt.Text = "Album:  " + song.Album;
-            GenreTxt.Text = "Genre:  " + song.Genre;
+            AlbumTxt.Text = "Album: " + song.Album;
+            GenreTxt.Text = "Genre: " + song.Genre;
             string yearStr = "";
             if (song.Year > 0) yearStr = int.Clamp(song.Year, 0, 99999).ToString();
-            YearTxt.Content = $"Year:  {yearStr}";
-            CharterTxt.Text = $"Charter:  {song.Charter}";
+            YearTxt.Content = $"Year: {yearStr}";
+            CharterTxt.Text = $"Charter: {song.Charter}";
             LeadDiffTxt.Content = $"Lead Intensity:  {int.Clamp(song.IntensityLead, 0, 99)}";
             BassDiffTxt.Content = $"Bass Intensity:  {int.Clamp(song.IntensityBass, 0, 99)}";
             if (song.IntensityLead > 99) LeadDiffTxt.Content += "+";
@@ -326,41 +333,52 @@ namespace FGH3ChartBrowser
             }
             LeadStarsTxt.Content = starsLead;
             BassStarsTxt.Content = starsBass;
+            SongLengthTxt.Content = $"Song Length:  {song.LengthString}";
+            SongSourceTxt.Text = "Source: " + song.SourceName;
 
+            SongLengthTxt.ToolTip = null;
+            SongSourceTxt.ToolTip = null;
             SongTitleTxt.ToolTip = null;
             ArtistTxt.ToolTip = null;
             AlbumTxt.ToolTip = null;
             GenreTxt.ToolTip = null;
             CharterTxt.ToolTip = null;
+            if (!String.IsNullOrWhiteSpace(song.FullSongLengthString)) SongLengthTxt.ToolTip = song.FullSongLengthString;
+            if (!String.IsNullOrWhiteSpace(song.Source)) SongSourceTxt.ToolTip = $"{song.SourceName} ({song.Source})";
             if (!String.IsNullOrWhiteSpace(song.Title)) SongTitleTxt.ToolTip = song.Title;
             if (!String.IsNullOrWhiteSpace(song.Artist)) ArtistTxt.ToolTip = song.Artist;
             if (!String.IsNullOrWhiteSpace(song.Album)) AlbumTxt.ToolTip = song.Album;
             if (!String.IsNullOrWhiteSpace(song.Genre)) GenreTxt.ToolTip = song.Genre;
             if (!String.IsNullOrWhiteSpace(song.Charter)) CharterTxt.ToolTip = song.Charter;
+
         }
         private void RefreshSongInfo()
         {
             LoadingPhraseTxt.Text = "";
             SongTitleTxt.Text = "";
             ArtistTxt.Text = "";
-            AlbumTxt.Text = "Album:  ";
-            GenreTxt.Text = "Genre:  ";
-            YearTxt.Content = "Year:  ";
-            CharterTxt.Text = "Charter:  ";
-            LeadDiffTxt.Content = "Lead Intensity:  ";
-            BassDiffTxt.Content = "Bass Intensity:  ";
+            AlbumTxt.Text = "Album: ";
+            GenreTxt.Text = "Genre: ";
+            YearTxt.Content = "Year: ";
+            CharterTxt.Text = "Charter: ";
+            LeadDiffTxt.Content = "Lead Intensity: ";
+            BassDiffTxt.Content = "Bass Intensity: ";
             LeadStarsTxt.Content = "☆☆☆☆☆☆";
             BassStarsTxt.Content = "☆☆☆☆☆☆";
+            SongSourceTxt.Text = "Source: ";
+            SongLengthTxt.Content = "Length: ";
             SongTitleTxt.ToolTip = null;
             ArtistTxt.ToolTip = null;
             AlbumTxt.ToolTip = null;
             GenreTxt.ToolTip = null;
             CharterTxt.ToolTip = null;
+            SongSourceTxt.ToolTip = null;
+            SongLengthTxt.ToolTip = null;
         }
 
         private void LoadConfig()
         {
-            
+
             FGH3_Path_TxtBox.Text = Settings.Config.AppSettings.Settings["fastgh3_exe_location"].Value;
             if (String.IsNullOrEmpty(FGH3_Path_TxtBox.Text))
             {
@@ -425,7 +443,7 @@ namespace FGH3ChartBrowser
                 Settings.Config.Save();
             }
         }
-        
+
         private async void ScanSongs(object? sender, DoWorkEventArgs e)
         {
             string searchPath = scanFolder;
@@ -464,7 +482,9 @@ namespace FGH3ChartBrowser
                                 string charter = "Unknown Charter";
                                 string genre = "";
                                 string loadingPhrase = "";
+                                string source = "";
                                 int year = 0;
+                                long songLength = -1;
                                 try
                                 {
                                     songIniConfig = new ConfigurationBuilder().AddIniFile(songIniFiles[0]).Build();
@@ -485,6 +505,12 @@ namespace FGH3ChartBrowser
                                     }
                                     songEntry.IntensityLead = int.Clamp(diffLead, 0, 100);
                                     songEntry.IntensityBass = int.Clamp(diffBass, 0, 100);
+                                    long.TryParse(songIniConfig.GetSection("song")["song_length"], out songLength);
+                                    string? iconStr = songIniConfig.GetSection("song")["icon"];
+                                    if (!String.IsNullOrWhiteSpace(iconStr) && iconStr != "0" && iconStr != "-1")
+                                    {
+                                        source = (iconStr + "").ToLower();
+                                    }
                                 }
                                 catch { scanErrors++; }
                                 songEntry.Artist = "" + artist;
@@ -495,8 +521,12 @@ namespace FGH3ChartBrowser
                                 songEntry.Year = year;
                                 songEntry.Path = chart;
                                 songEntry.LoadingPhrase = loadingPhrase;
+                                songEntry.LengthMilliseconds = songLength;
+                                songEntry.Source = source;
+                                songEntry.SourceName = songEntry.TryFindSourceName(baseJsonData, extraJsonData);
+
                                 tmpSongList.Add(songEntry);
-                                
+
                                 scannedSongs++;
                             }
                         }
@@ -530,7 +560,9 @@ namespace FGH3ChartBrowser
                                 string charter = "Unknown Charter";
                                 string genre = "";
                                 string loadingPhrase = "";
+                                string source = "";
                                 int year = 0;
+                                long songLength = -1;
                                 try
                                 {
                                     songIniConfig = new ConfigurationBuilder().AddIniFile(songIniFiles[0]).Build();
@@ -540,16 +572,22 @@ namespace FGH3ChartBrowser
                                     album = RemoveHtml(songSect["album"] + "");
                                     charter = RemoveHtml(songSect["charter"] + "");
                                     genre = RemoveHtml(songSect["genre"] + "");
-                                    loadingPhrase += RemoveHtml((songSect["loading_phrase"] + "").Replace("<br>","\n"));
+                                    loadingPhrase += RemoveHtml((songSect["loading_phrase"] + "").Replace("<br>", "\n"));
                                     int.TryParse(songIniConfig.GetSection("song")["year"], out year);
                                     int diffLead = 0;
                                     int diffBass = 0;
-                                    int.TryParse(songIniConfig.GetSection("song")["diff_guitar"], out diffLead);        if (!int.TryParse(songIniConfig.GetSection("song")["diff_bass"], out diffBass))
+                                    int.TryParse(songIniConfig.GetSection("song")["diff_guitar"], out diffLead); if (!int.TryParse(songIniConfig.GetSection("song")["diff_bass"], out diffBass))
                                     {
                                         int.TryParse(songIniConfig.GetSection("song")["diff_rhythm"], out diffBass);
                                     }
                                     songEntry.IntensityLead = int.Clamp(diffLead, 0, 100);
                                     songEntry.IntensityBass = int.Clamp(diffBass, 0, 100);
+                                    long.TryParse(songIniConfig.GetSection("song")["song_length"], out songLength);
+                                    string? iconStr = songIniConfig.GetSection("song")["icon"];
+                                    if (!String.IsNullOrWhiteSpace(iconStr) && iconStr != "0" && iconStr != "-1")
+                                    {
+                                        source = (iconStr + "").ToLower();
+                                    }
                                 }
                                 catch { scanErrors++; }
                                 songEntry.Artist = "" + artist;
@@ -560,6 +598,10 @@ namespace FGH3ChartBrowser
                                 songEntry.Year = year;
                                 songEntry.Path = midi;
                                 songEntry.LoadingPhrase = loadingPhrase;
+                                songEntry.LengthMilliseconds = songLength;
+                                songEntry.Source = source;
+                                songEntry.SourceName = songEntry.TryFindSourceName(baseJsonData, extraJsonData);
+
                                 tmpSongList.Add(songEntry);
 
                                 scannedSongs++;
@@ -589,16 +631,19 @@ namespace FGH3ChartBrowser
                         try
                         {
                             Sng sngData = Sng.Load(sngPath);
-                            string artist = "";
-                            string title = "";
-                            string album = "";
-                            string charter = "";
-                            string genre = "";
-                            string loadingPhrase = "";
-                            string diffLeadStr = "";
-                            string diffBassStr = "";
+                            string artist;
+                            string title;
+                            string album;
+                            string charter;
+                            string genre;
+                            string loadingPhrase;
+                            string diffLeadStr;
+                            string diffBassStr;
+                            string songLengthStr;
+                            string iconStr = "";
                             int diffLead = 0;
                             int diffBass = 0;
+                            long songLength = -1;
                             sngData.meta.TryGetValue("artist", out artist);
                             sngData.meta.TryGetValue("name", out title);
                             sngData.meta.TryGetValue("album", out album);
@@ -607,16 +652,22 @@ namespace FGH3ChartBrowser
                             sngData.meta.TryGetValue("loading_phrase", out loadingPhrase);
                             sngData.meta.TryGetValue("diff_guitar", out diffLeadStr);
                             sngData.meta.TryGetValue("diff_rhythm", out diffBassStr);
+                            sngData.meta.TryGetValue("song_length", out songLengthStr);
+                            sngData.meta.TryGetValue("icon", out iconStr);
                             int.TryParse(diffLeadStr, out diffLead);
                             int.TryParse(diffBassStr, out diffBass);
+                            long.TryParse(songLengthStr, out songLength);
                             songEntry.IntensityLead = int.Clamp(diffLead, 0, 100);
                             songEntry.IntensityBass = int.Clamp(diffBass, 0, 100);
-                            songEntry.Title         = "" + RemoveHtml(title);
-                            songEntry.Artist        = "" + RemoveHtml(artist);
-                            songEntry.Album         = "" + RemoveHtml(album);
-                            songEntry.Genre         = "" + RemoveHtml(genre);
-                            songEntry.Charter       = "" + RemoveHtml(charter);
-                            songEntry.LoadingPhrase = "" + RemoveHtml(("" + loadingPhrase).Replace("<br>","\n"));
+                            songEntry.Title = "" + RemoveHtml(title);
+                            songEntry.Artist = "" + RemoveHtml(artist);
+                            songEntry.Album = "" + RemoveHtml(album);
+                            songEntry.Genre = "" + RemoveHtml(genre);
+                            songEntry.Charter = "" + RemoveHtml(charter);
+                            songEntry.LoadingPhrase = "" + RemoveHtml(("" + loadingPhrase).Replace("<br>", "\n"));
+                            songEntry.LengthMilliseconds = songLength;
+                            songEntry.Source = ("" + iconStr).ToLower();
+                            songEntry.SourceName = songEntry.TryFindSourceName(baseJsonData, extraJsonData);
                             int year = 0;
                             int.TryParse(sngData.meta["year"], out year);
                             songEntry.Year = year;
@@ -700,7 +751,7 @@ namespace FGH3ChartBrowser
                 albumView.ThemeMode = this.ThemeMode;
                 albumView.Title += $": {song.Album}";
                 albumView.Background = AlbumRect.Fill;
-                
+
                 albumView.Show();
             }
         }
@@ -743,7 +794,7 @@ namespace FGH3ChartBrowser
 
         public static string RemoveHtml(string input)
         {
-            return Regex.Replace(input, "<[a-zA-Z/].*?>", String.Empty).Trim();
+            return Regex.Replace(input, "<[#a-zA-Z/].*?>", String.Empty).Trim();
         }
 
         private void ChartsPathBrowseBtn_Click(object sender, RoutedEventArgs e)
@@ -752,7 +803,7 @@ namespace FGH3ChartBrowser
             Nullable<bool> result = dlg.ShowDialog();
             if (result.HasValue && result.Value)
             {
-                if (Chart_Folder_TxtBox.Text != dlg.FolderName) 
+                if (Chart_Folder_TxtBox.Text != dlg.FolderName)
                 {
                     Chart_Folder_TxtBox.Text = dlg.FolderName;
                     Settings.Config.AppSettings.Settings["charts_folder"].Value = dlg.FolderName;
@@ -791,6 +842,8 @@ namespace FGH3ChartBrowser
                     if (entry.Genre != null) results += entry.Genre;
                     if (entry.Charter != null) results += entry.Charter;
                     if (entry.Path != null) results += entry.Path;
+                    if (entry.Source != null) results += entry.Source;
+                    if (entry.SourceName != "Custom/Unknown") results += entry.SourceName;
 
                     results = results.Replace(" ", "").Replace("-", "");
 
@@ -799,7 +852,7 @@ namespace FGH3ChartBrowser
                 else { return true; }
             }
             else return false;
-            
+
         }
 
         private void SearchTxtBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -956,7 +1009,7 @@ namespace FGH3ChartBrowser
         }
         private void SongsDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
-            
+
         }
 
         private void OpenInExplorerBtn_Click(object sender, RoutedEventArgs e)
@@ -1066,6 +1119,29 @@ namespace FGH3ChartBrowser
                 }
             }
         }
+
+        public string baseJsonData;
+        public string extraJsonData;
+
+        public void LoadSourceJsons()
+        {
+            if (File.Exists("opensource-base.json"))
+            {
+                try
+                {
+                    baseJsonData = File.ReadAllText("opensource-base.json");
+                }
+                catch { }
+            }
+            if (File.Exists("opensource-extra.json"))
+            {
+                try
+                {
+                    extraJsonData = File.ReadAllText("opensource-extra.json");
+                }
+                catch { }
+            }
+        }
     }
     public class SongEntry
     {
@@ -1079,8 +1155,103 @@ namespace FGH3ChartBrowser
         public string LoadingPhrase { get; set; }
         public int IntensityLead { get; set; }
         public int IntensityBass { get; set; }
+        public long LengthMilliseconds { get; set; }
+        public string LengthString
+        {
+            get
+            {
+                if (LengthMilliseconds <= 0) return "";
+                TimeSpan t = TimeSpan.FromMilliseconds(LengthMilliseconds);
+                if (t.Hours > 9)
+                    return string.Format("Forever!", t.Hours, t.Minutes, t.Seconds);
+                else if (t.Hours > 0)
+                    return string.Format("{0:D1}:{1:D2}:{2:D2}", t.Hours, t.Minutes, t.Seconds);
+                else
+                    return string.Format("{0:D2}:{1:D2}", t.Minutes, t.Seconds);
+            }
+        }
+        public string? FullSongLengthString
+        {
+            get
+            {
+                if (LengthMilliseconds <= 0) return null;
+                TimeSpan t = TimeSpan.FromMilliseconds(LengthMilliseconds);
+                string lengthStr = "";
+                string hourS = "hour";
+                string minuteS = "minute";
+                string secondS = "second";
+                if (t.Minutes > 1) minuteS = "minutes";
+                if (t.Seconds > 1) secondS = "seconds";
+                if (t.Hours > 0)
+                {
+                    if (t.Hours > 1) hourS = "hours";
+                    lengthStr = string.Format("{0:D1} {1}, {2:D1} {3}, {4:D1} {5}", t.Hours, hourS, t.Minutes, minuteS, t.Seconds, secondS);
+                }
+                else if (t.Minutes > 0)
+                    lengthStr = string.Format("{0:D1} {1}, {2:D1} {3}", t.Minutes, minuteS, t.Seconds, secondS);
+                else
+                    lengthStr = string.Format("{0:0.0} {1}", (LengthMilliseconds / 1000.0), secondS);
+                lengthStr = lengthStr.Replace(", 0 minute", "").Replace(", 0 second", "");
+                return lengthStr;
+            }
+        }
+        public string Source { get; set; }
+        public string SourceName { get; set; }
 
-        public SongEntry(string path = "", string artist = "Unknown Artist", string title = "Unknown Title", string album = "Unknown Album", string charter = "", int year = 0, string genre = "", string loadingPhrase = "", int intensityLead = 0, int intensityBass = 0)
+        public string TryFindSourceName(string baseJson = "{}", string extraJson = "{}")
+        {
+            string sourceID = Source.ToLower();
+            if (String.IsNullOrWhiteSpace(sourceID) || int.TryParse(sourceID, out int sourceInt)) return "Custom/Unknown";
+            JsonDocument baseDoc = JsonDocument.Parse(baseJson);
+            JsonDocument extraDoc = JsonDocument.Parse(extraJson);
+            if (baseDoc.RootElement.TryGetProperty("sources", out JsonElement baseSourcesE))
+            {
+                foreach (JsonElement sauce in baseSourcesE.EnumerateArray())
+                {
+                    if (sauce.TryGetProperty("ids", out JsonElement idsElement))
+                    {
+                        foreach (JsonElement idee in idsElement.EnumerateArray())
+                        {
+                            if ((idee.GetString() + "").ToLower() == sourceID)
+                            {
+                                if (sauce.TryGetProperty("names", out JsonElement namesElement))
+                                {
+                                    if (namesElement.TryGetProperty("en-US", out JsonElement sauceName))
+                                    {
+                                        return sauceName.GetString() + "";
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (extraDoc.RootElement.TryGetProperty("sources", out JsonElement extraSourcesE))
+            {
+                foreach (JsonElement sauce in extraSourcesE.EnumerateArray())
+                {
+                    if (sauce.TryGetProperty("ids", out JsonElement idsElement))
+                    {
+                        foreach (JsonElement idee in idsElement.EnumerateArray())
+                        {
+                            if ((idee.GetString() + "").ToLower() == sourceID)
+                            {
+                                if (sauce.TryGetProperty("names", out JsonElement namesElement))
+                                {
+                                    if (namesElement.TryGetProperty("en-US", out JsonElement sauceName))
+                                    {
+                                        return sauceName.GetString() + "";
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return sourceID;
+        }
+
+        public SongEntry(string path = "", string artist = "Unknown Artist", string title = "Unknown Title", string album = "Unknown Album", string charter = "", int year = 0, string genre = "", string loadingPhrase = "", int intensityLead = 0, int intensityBass = 0, long lengthMilliseconds = 0, string source = "")
         {
             Artist = artist;
             Title = title;
@@ -1092,6 +1263,9 @@ namespace FGH3ChartBrowser
             LoadingPhrase = loadingPhrase;
             IntensityLead = intensityLead;
             IntensityBass = intensityBass;
+            LengthMilliseconds = lengthMilliseconds;
+            Source = source;
+            SourceName = source;
         }
     }
     public class Settings

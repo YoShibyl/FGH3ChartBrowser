@@ -11,7 +11,7 @@
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
     <Configurations>Debug;Release</Configurations>
-    <Version>$(VersionPrefix)1.6.0</Version>
+    <Version>$(VersionPrefix)1.6.1</Version>
 	<NoWarn>$(NoWarn);WPF0001</NoWarn>
   </PropertyGroup>
 
@@ -49,6 +49,12 @@
   <ItemGroup>
     <None Update="App.config">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </None>
+    <None Update="opensource-base.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="opensource-extra.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 
