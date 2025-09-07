@@ -1,17 +1,13 @@
-# Chart Browser for FastGH3
+# FastGH3 Chart Browser
 This is a simple tool for quickly scanning and loading custom Guitar Hero songs in [FastGH3](https://github.com/donnaken15/FastGH3).
 
 <details>
-  <summary>Screenshot (v1.6 Dark Mode)</summary>
-
-  <img width="988" height="755" alt="image" src="https://github.com/user-attachments/assets/bd97104c-06fe-46a0-88e6-cea29527f3ce" />
-
+  <summary>Screenshot (v1.6.1 Dark Mode)</summary>
+  <img width="988" height="755" alt="image" src="https://github.com/user-attachments/assets/ddfcbc8a-4fc7-41e0-848c-5fee62d576bd" />
 </details>
 <details>
-<summary>Screenshot (v1.6 Legacy)</summary>
-  
-  <img width="988" height="767" alt="image" src="https://github.com/user-attachments/assets/b1ccf6a8-5678-4984-b16c-b1fe8a390316" />
-
+<summary>Screenshot (v1.6.1 Legacy)</summary>
+  <img width="988" height="767" alt="image" src="https://github.com/user-attachments/assets/9e323c56-d002-416a-ab93-fc8999e6a242" />
 </details>
 
 ## Prerequisites
@@ -34,6 +30,8 @@ As of v1.4.0, you can use an Xinput gamepad (such as a guitar controller) to scr
 ![image](https://github.com/user-attachments/assets/73ce51e1-e5dd-4133-8fc5-746741ccc075)
 
 ## Planned features
+- Downloading new song source data directly from [OpenSource](https://github.com/YARC-Official/OpenSource)
+  - Maybe even showing icons from OpenSource as well?
 - Storing scan results for later
 
 ## Credits
@@ -42,4 +40,5 @@ As of v1.4.0, you can use an Xinput gamepad (such as a guitar controller) to scr
 - Neversoft / Aspyr : Makers of the original *Guitar Hero III* PC port
 - [teh_supar_hackr](https://www.spriters-resource.com/pc_computer/guitarheroworldtour/sheet/193359/) (The Spriters Resource) : Ripped UI button assets from *Guitar Hero World Tour* (used in v1.4.0+)
 - [amerkoleci](https://github.com/amerkoleci/Vortice.Windows) : Vortice XInput library used for controller navigation
+- [YARC](https://github.com/YARC-Official/) : Makers of [YARG](https://yarg.in/) and [OpenSource](https://github.com/YARC-Official/OpenSource) (the JSON data used for source display)
 - Everyone else whose code helped me from countless Google searches
