@@ -145,5 +145,10 @@ namespace FGH3ChartBrowser
                 }
             }
         }
+
+        private void RefreshSourcesBtn_Click(object sender, RoutedEventArgs e)
+        {
+            Sources.DownloadSources();
+        }
     }
 }

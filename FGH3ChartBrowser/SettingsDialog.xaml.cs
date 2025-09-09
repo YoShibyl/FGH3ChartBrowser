@@ -46,7 +46,7 @@ namespace FGH3ChartBrowser
 
         private void ciCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            FGH3ChartBrowser.Settings.SetControllerIndex((uint)ciCombo.SelectedIndex);
+            Settings.SetControllerIndex((uint)ciCombo.SelectedIndex);
         }
 
         private void AutoScanChk_Checked(object sender, RoutedEventArgs e)
@@ -148,6 +148,11 @@ namespace FGH3ChartBrowser
                     gameWinHeightTxt.Text = dimensions[1];
                 }
             }
+        }
+
+        private void RefreshSourcesBtn_Click(object sender, RoutedEventArgs e)
+        {
+            Sources.DownloadSources();
         }
     }
 }

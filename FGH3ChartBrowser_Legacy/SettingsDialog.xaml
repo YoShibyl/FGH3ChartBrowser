@@ -5,11 +5,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FGH3ChartBrowser"
         mc:Ignorable="d"
-        Title="Chart Browser Settings" Height="360" Width="600">
+        Title="Chart Browser Settings" Height="360" Width="640">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="420*"/>
-            <ColumnDefinition Width="180*"/>
+            <ColumnDefinition Width="220*"/>
         </Grid.ColumnDefinitions>
         <ComboBox x:Name="ciCombo" HorizontalAlignment="Left" Margin="125,19,0,0" VerticalAlignment="Top" Width="86" SelectionChanged="ComboBox_SelectionChanged" Height="22">
             <ComboBoxItem Content="0"/>
@@ -50,16 +50,16 @@
         <Label Content="Focus on filter/search bar" HorizontalAlignment="Left" Margin="238,209,0,0" VerticalAlignment="Top" Height="26" Width="144"/>
         <Button x:Name="CancelBtn" Content="USERS CAN'T SEE THIS BUTTON" Margin="13,-81,0,0" VerticalAlignment="Top" Foreground="#FF797979" IsCancel="True" Click="CancelBtn_Click" IsTabStop="False" Grid.ColumnSpan="2" Height="20"/>
 
-        <Label Content="This tool was made by Yoshibyl (a.k.a. &quot;Yoshi&quot;)" HorizontalAlignment="Left" Margin="10,0,0,42" VerticalAlignment="Bottom" FontSize="11" Height="25" Width="231"/>
-        <Label x:Name="Watermark" Content="https://github.com/YoShibyl/FGH3ChartBrowser" HorizontalAlignment="Left" Margin="10,0,0,17" VerticalAlignment="Bottom" Foreground="#FF1899FF" Height="26" Width="263"/>
-        <Button x:Name="WatermarkBtn" Content="Button" Margin="10,0,0,13" VerticalAlignment="Bottom" Height="30" Foreground="{x:Null}" Click="WatermarkBtn_Click" Opacity="0" HorizontalAlignment="Left" Width="266" Cursor="Hand"/>
+        <Label Content="This tool was made by Yoshibyl (a.k.a. &quot;Yoshi&quot;)" HorizontalAlignment="Left" Margin="10,259,0,0" VerticalAlignment="Top" FontSize="11" Height="25" Width="231"/>
+        <Label x:Name="Watermark" Content="https://github.com/YoShibyl/FGH3ChartBrowser" HorizontalAlignment="Left" Margin="10,289,0,0" VerticalAlignment="Top" Foreground="#FF1899FF" Height="26" Width="263"/>
+        <Button x:Name="WatermarkBtn" Content="Button" Margin="10,289,0,0" VerticalAlignment="Top" Height="30" Foreground="{x:Null}" Click="WatermarkBtn_Click" Opacity="0" HorizontalAlignment="Left" Width="270" Cursor="Hand"/>
         <Label Content="Set game resolution:" HorizontalAlignment="Left" Margin="10,12,0,0" VerticalAlignment="Top" Grid.Column="1" FontSize="14"/>
         <Label Content="Width:" HorizontalAlignment="Left" Margin="10,87,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <TextBox x:Name="gameWinWidthTxt" Grid.Column="1" HorizontalAlignment="Left" Margin="73,87,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="87" MaxLines="1" MaxLength="4" PreviewTextInput="NumberValidationTextBox" DataObject.Pasting="WidthHeight_Pasting" FontSize="18"/>
-        <TextBox x:Name="gameWinHeightTxt" Grid.Column="1" HorizontalAlignment="Left" Margin="73,121,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="87" MaxLines="1" MaxLength="4" PreviewTextInput="NumberValidationTextBox" DataObject.Pasting="WidthHeight_Pasting" FontSize="18"/>
+        <TextBox x:Name="gameWinWidthTxt" Grid.Column="1" HorizontalAlignment="Left" Margin="123,88,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="87" MaxLines="1" MaxLength="4" PreviewTextInput="NumberValidationTextBox" DataObject.Pasting="WidthHeight_Pasting" FontSize="18"/>
+        <TextBox x:Name="gameWinHeightTxt" Grid.Column="1" HorizontalAlignment="Left" Margin="123,121,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="87" MaxLines="1" MaxLength="4" PreviewTextInput="NumberValidationTextBox" DataObject.Pasting="WidthHeight_Pasting" FontSize="18"/>
         <Label Content="Height:" HorizontalAlignment="Left" Margin="10,121,0,0" VerticalAlignment="Top" Grid.Column="1"/>
-        <Button x:Name="saveResolutionBtn" Grid.Column="1" Content="Save to Config" Margin="10,155,20,0" VerticalAlignment="Top" FontSize="14" Click="saveResolutionBtn_Click"/>
-        <ComboBox x:Name="resComboBox" Grid.Column="1" HorizontalAlignment="Left" Margin="10,45,0,0" VerticalAlignment="Top" Width="150" SelectionChanged="resComboBox_SelectionChanged" FontSize="11">
+        <Button x:Name="saveResolutionBtn" Grid.Column="1" Content="Save to Config" Margin="10,155,10,0" VerticalAlignment="Top" FontSize="14" Click="saveResolutionBtn_Click"/>
+        <ComboBox x:Name="resComboBox" Grid.Column="1" HorizontalAlignment="Center" Margin="0,45,0,0" VerticalAlignment="Top" Width="200" SelectionChanged="resComboBox_SelectionChanged" FontSize="11">
             <ComboBoxItem Content="800x600"/>
             <ComboBoxItem Content="960x600"/>
             <ComboBoxItem Content="1024x768"/>
@@ -74,6 +74,7 @@
             <ComboBoxItem Content="2560x1440"/>
             <ComboBoxItem Content="3840x2160"/>
         </ComboBox>
+        <Button x:Name="RefreshSourcesBtn" Grid.Column="1" Content="Refresh Source Names" Margin="10,283,10,0" VerticalAlignment="Top" Click="RefreshSourcesBtn_Click" FontSize="14"/>
 
 
     </Grid>

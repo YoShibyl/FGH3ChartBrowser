@@ -9,11 +9,11 @@
         ThemeMode="System"
         Title="FastGH3 Chart Browser" Width="803" ResizeMode="CanMinimize" Icon="/icon.png" Height="610">
     <Grid Margin="0,0,10,10" UseLayoutRounding="False">
-        <Label Content="FastGH3 path:" HorizontalAlignment="Left" Margin="10,15,0,0" VerticalAlignment="Top" Width="84" Background="{x:Null}"/>
-        <TextBox x:Name="FGH3_Path_TxtBox" HorizontalAlignment="Left" Margin="104,9,0,0" Text="C:\Program Files (x86)\FastGH3\FastGH3.exe" VerticalAlignment="Top" Width="261" VerticalContentAlignment="Center" BorderBrush="Gray" FontFamily="Segoe UI" FontSize="11"/>
+        <Label Content="FastGH3 path:" HorizontalAlignment="Left" Margin="10,15,0,0" VerticalAlignment="Top" Width="95" Background="{x:Null}"/>
+        <TextBox x:Name="FGH3_Path_TxtBox" HorizontalAlignment="Left" Margin="110,9,0,0" Text="C:\Program Files (x86)\FastGH3\FastGH3.exe" VerticalAlignment="Top" Width="255" VerticalContentAlignment="Center" BorderBrush="Gray" FontFamily="Segoe UI" FontSize="11"/>
         <Button x:Name="GH3PathBrowseBtn" Content="Browse for FastGH3.exe" Margin="370,9,0,0" VerticalAlignment="Top" Width="151" Click="GH3PathBrowseBtn_Click" UseLayoutRounding="False" BorderBrush="Gray" FontFamily="Segoe UI" FontSize="11"/>
-        <Label Content="Charts folder:" HorizontalAlignment="Left" Margin="10,41,0,0" VerticalAlignment="Top" Width="81"/>
-        <TextBox x:Name="Chart_Folder_TxtBox" HorizontalAlignment="Left" Margin="104,37,0,0" VerticalAlignment="Top" Width="261" BorderBrush="Gray" FontFamily="Segoe UI" FontSize="11"/>
+        <Label Content="Charts folder:" HorizontalAlignment="Left" Margin="10,41,0,0" VerticalAlignment="Top" Width="95"/>
+        <TextBox x:Name="Chart_Folder_TxtBox" HorizontalAlignment="Left" Margin="110,37,0,0" VerticalAlignment="Top" Width="255" BorderBrush="Gray" FontFamily="Segoe UI" FontSize="11"/>
         <Button x:Name="ChartsPathBrowseBtn" Content="Browse for Folder" Margin="370,37,0,0" VerticalAlignment="Top" Width="151" Click="ChartsPathBrowseBtn_Click" BorderBrush="Gray" FontFamily="Segoe UI" FontSize="11"/>
         <Button x:Name="ScanChartsBtn" Content="Scan Songs" Margin="531,9,0,0" VerticalAlignment="Top" FontSize="16" Click="ScanChartsBtn_Click" Height="34" Width="245" BorderBrush="Gray"/>
 

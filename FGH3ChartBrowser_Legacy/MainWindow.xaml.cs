@@ -14,6 +14,8 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.IO.Pipes;
+using System.Net.Http;
+using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -384,6 +386,10 @@ namespace FGH3ChartBrowser
                 Settings.Config.AppSettings.Settings["fastgh3_exe_location"].Value = @"C:\Program Files (x86)\FastGH3\FastGH3.exe";
                 Settings.Config.Save();
             }
+            if (!Settings.Config.AppSettings.Settings.AllKeys.Contains("ui_theme"))
+            {
+                Settings.Config.AppSettings.Settings.Add("ui_theme", "0");
+            }
             if (!Settings.Config.AppSettings.Settings.AllKeys.Contains("controller_index"))
             {
                 Settings.Config.AppSettings.Settings.Add("controller_index", "0");
@@ -392,11 +398,16 @@ namespace FGH3ChartBrowser
             {
                 Settings.Config.AppSettings.Settings.Add("auto_scan", "true");
             }
+            if (!Settings.Config.AppSettings.Settings.AllKeys.Contains("opensource_hash"))
+            {
+                Settings.Config.AppSettings.Settings.Add("opensource_hash", "");
+            }
             Settings.AutoScan = Settings.Config.AppSettings.Settings["auto_scan"].Value.ToLower() == "true";
             uint.TryParse(Settings.Config.AppSettings.Settings["controller_index"].Value, out uint ci);
             Settings.SetControllerIndex(ci);
             scanFolder = Settings.Config.AppSettings.Settings["charts_folder"].Value;
             Chart_Folder_TxtBox.Text = scanFolder;
+            Settings.SetSourceHash(Settings.Config.AppSettings.Settings["opensource_hash"].Value);
             Settings.Config.Save();
 
             if (Settings.AutoScan && Directory.Exists(scanFolder))
@@ -800,10 +811,6 @@ namespace FGH3ChartBrowser
                     Chart_Folder_TxtBox.Text = dlg.FolderName;
                     Settings.Config.AppSettings.Settings["charts_folder"].Value = dlg.FolderName;
                     Settings.Config.Save();
-                    if (Settings.GetAutoScan())
-                    {
-                        // auto scan
-                    }
                 }
             }
         }
@@ -1052,7 +1059,7 @@ namespace FGH3ChartBrowser
             settingsDialog = new SettingsDialog();
             
             settingsDialog.Show();
-        } // */
+        }
 
         private void RandomSongBtn_Click(object sender, RoutedEventArgs e)
         {
@@ -1227,6 +1234,148 @@ namespace FGH3ChartBrowser
             SourceName = source;
         }
     }
+    public class Sources
+    {
+        public static string baseJsonData = "{}";
+        public static string extraJsonData = "{}";
+        public static bool IsConnectedToInternetByPing()
+        {
+            try
+            {
+                Ping myPing = new Ping();
+                string host = "8.8.8.8";
+                byte[] buffer = new byte[32];
+                int timeout = 1000;
+                PingOptions pingOptions = new PingOptions();
+                PingReply reply = myPing.Send(host, timeout, buffer, pingOptions);
+                return (reply.Status == IPStatus.Success);
+            }
+            catch (PingException)
+            {
+                return false;
+            }
+        }
+
+        public static void LoadSourceJsons()
+        {
+            // TO DO: Change where these files are loaded from?
+            if (File.Exists("opensource-base.json"))
+            {
+                try
+                {
+                    baseJsonData = File.ReadAllText("opensource-base.json");
+                }
+                catch { }
+            }
+            if (File.Exists("opensource-extra.json"))
+            {
+                try
+                {
+                    extraJsonData = File.ReadAllText("opensource-extra.json");
+                }
+                catch { }
+            }
+        }
+        public static async Task<string> GetLatestCommitHash()
+        {
+            if (IsConnectedToInternetByPing())
+            {
+
+                using (var client = new System.Net.Http.HttpClient())
+                {
+                    client.DefaultRequestHeaders.Add("User-Agent", "C# App");
+                    var url = "https://api.github.com/repos/YARC-Official/OpenSource/commits?per_page=1";
+                    string response = await client.GetStringAsync(url);
+
+                    JsonDocument respDoc = JsonDocument.Parse(response);
+                    if (respDoc.RootElement.GetArrayLength() > 0)
+                    {
+                        if (respDoc.RootElement[0].TryGetProperty("sha", out JsonElement shaElement))
+                        {
+                            Debug.WriteLine("Hash = " + shaElement);
+                            return shaElement.GetString() + "";
+                        }
+                    }
+                }
+            }
+            return "";
+        }
+        public static async void DownloadSources()
+        {
+            string baseJsonURL = "https://api.github.com/repos/YARC-Official/OpenSource/contents/base/index.json";
+            string extraJsonURL = "https://api.github.com/repos/YARC-Official/OpenSource/contents/extra/index.json";
+            string latestHash = await GetLatestCommitHash();
+
+            bool isConnectedToInternet = IsConnectedToInternetByPing();
+
+            if (isConnectedToInternet && (latestHash != Settings.lastSourceHash || !System.IO.File.Exists("opensource-base.json") || !System.IO.File.Exists("opensource-extra.json")))
+            {
+                using (var client = new System.Net.Http.HttpClient())
+                {
+                    client.DefaultRequestHeaders.Add("User-Agent", "C# App");
+                    try
+                    {
+                        // Get base/index.json
+                        var baseResponse = await client.GetAsync(baseJsonURL);
+                        baseResponse.EnsureSuccessStatusCode();
+                        var baseContentJson = await baseResponse.Content.ReadAsStringAsync();
+                        JsonDocument baseContentDoc = JsonDocument.Parse(baseContentJson);
+                        if (baseContentDoc.RootElement.TryGetProperty("download_url", out JsonElement baseContentElement))
+                        {
+                            var downloadUrl = baseContentElement.GetString() + "";
+                            if (string.IsNullOrEmpty(downloadUrl))
+                            {
+                                Debug.WriteLine($"Error: index.json does not exist or download_url is missing.");
+                                return;
+                            }
+
+                            var fileBytes = await client.GetByteArrayAsync(downloadUrl);
+                            await System.IO.File.WriteAllBytesAsync("opensource-base.json", fileBytes);
+                        }
+                        // Get extra/index.json
+                        var extraResponse = await client.GetAsync(extraJsonURL);
+                        extraResponse.EnsureSuccessStatusCode();
+                        var extraContentJson = await extraResponse.Content.ReadAsStringAsync();
+                        JsonDocument extraContentDoc = JsonDocument.Parse(extraContentJson);
+                        if (extraContentDoc.RootElement.TryGetProperty("download_url", out JsonElement extraContentElement))
+                        {
+                            var downloadUrl = extraContentElement.GetString() + "";
+                            if (string.IsNullOrEmpty(downloadUrl))
+                            {
+                                Debug.WriteLine($"Error: index.json does not exist or download_url is missing.");
+                                return;
+                            }
+
+                            var fileBytes = await client.GetByteArrayAsync(downloadUrl);
+                            await System.IO.File.WriteAllBytesAsync("opensource-extra.json", fileBytes);
+                        }
+
+                        // Once complete, store the new hash to the config.
+                        Settings.SetSourceHash(latestHash);
+                        MessageBox.Show("Sources updated successfully.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    catch (HttpRequestException e)
+                    {
+                        Debug.WriteLine($"Error downloading file: {e.Message}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"General error: {ex.Message}");
+                    }
+                }
+            }
+            else if (!isConnectedToInternet)
+            {
+                MessageBox.Show("No internet connection available. Cannot download latest sources.", "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+            }
+            else
+            {
+                MessageBox.Show("Sources are already up to date.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+
+            Sources.LoadSourceJsons();
+        }
+    }
     public class Settings
     {
         public static Configuration Config { get; set; }
@@ -1254,6 +1403,16 @@ namespace FGH3ChartBrowser
         public static bool GetAutoScan()
         {
             return AutoScan;
+        }
+
+        public static string? lastSourceHash { get; set; }
+
+        public static void SetSourceHash(string hash)
+        {
+            lastSourceHash = hash;
+            Config.AppSettings.Settings["opensource_hash"].Value = hash;
+            Config.Save();
+            Debug.WriteLine("Set source hash to " + hash);
         }
     }
 }
