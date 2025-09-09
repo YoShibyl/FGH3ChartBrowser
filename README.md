@@ -2,16 +2,19 @@
 This is a simple tool for quickly scanning and loading custom Guitar Hero songs in [FastGH3](https://github.com/donnaken15/FastGH3).
 
 <details>
-  <summary>Screenshot (v1.6.1 Dark Mode)</summary>
-  <img width="988" height="755" alt="image" src="https://github.com/user-attachments/assets/ddfcbc8a-4fc7-41e0-848c-5fee62d576bd" />
+  <summary>Screenshot (v1.6.2 Dark Mode)</summary>
+  <img width="988" height="755" alt="image" src="https://github.com/user-attachments/assets/0e8bd233-10e5-4b70-ae3b-97d30ac016aa" />
+
 </details>
 <details>
-<summary>Screenshot (v1.6.1 Legacy)</summary>
-  <img width="988" height="767" alt="image" src="https://github.com/user-attachments/assets/9e323c56-d002-416a-ab93-fc8999e6a242" />
+<summary>Screenshot (v1.6.2 Legacy)</summary>
+  <img width="988" height="755" alt="image" src="https://github.com/user-attachments/assets/b3e1d70d-acda-4fa2-bb8c-a45a8bfbae43" />
+
 </details>
 
 ## Prerequisites
 - Windows 10 22H2 or newer
+  + I recommend updating to Windows 11, if possible, as Windows 10 will be discontinued by Microsoft on October 14, 2025.
 - [.NET Desktop Runtime 9.0](https://dotnet.microsoft.com/en-us/download/dotnet/9.0) **(Legacy edition only requires .NET 8.0 or higher)**
 - [FastGH3](https://github.com/donnaken15/FastGH3)
 
@@ -30,8 +33,7 @@ As of v1.4.0, you can use an Xinput gamepad (such as a guitar controller) to scr
 ![image](https://github.com/user-attachments/assets/73ce51e1-e5dd-4133-8fc5-746741ccc075)
 
 ## Planned features
-- Downloading new song source data directly from [OpenSource](https://github.com/YARC-Official/OpenSource)
-  - Maybe even showing icons from OpenSource as well?
+- Displaying icons from [OpenSource](https://github.com/YARC-Official/OpenSource)?
 - Storing scan results for later
 
 ## Credits
