@@ -87,6 +87,9 @@ namespace FGH3ChartBrowser
             InitializeComponent();
 
             MainWin.Title += $" v{Assembly.GetExecutingAssembly().GetName().Version?.ToString(3)}";
+#if DEBUG
+            MainWin.Title += " [DEBUG]";
+#endif
             ScanProgressBar.Value = 0;
             RefreshSongInfo();
             totalSongs = 0;

@@ -50,7 +50,7 @@
             </DataGrid.ContextMenu>
         </DataGrid>
         <Label Content="Filter Songs:" HorizontalAlignment="Left" Margin="160,76,0,0" VerticalAlignment="Top" FontSize="14"/>
-        <ProgressBar x:Name="ScanProgressBar" HorizontalAlignment="Left" Height="12" Margin="531,45,0,0" VerticalAlignment="Top" Width="245" Value="69" Background="#00808080" Foreground="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" BorderBrush="#00000000"/>
+        <ProgressBar x:Name="ScanProgressBar" HorizontalAlignment="Left" Height="12" Margin="536,45,0,0" VerticalAlignment="Top" Width="235" Value="69" Background="#00808080" Foreground="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" BorderBrush="#00000000"/>
         <Button x:Name="FGH3SettingsBtn" Content="Open FastGH3 Settings Dialog" Margin="10,529,0,0" VerticalAlignment="Top" Width="253" Click="FGH3SettingsBtn_Click" BorderBrush="Gray" Height="29" FontSize="11"/>
         <Rectangle HorizontalAlignment="Left" Height="224" Margin="11,110,0,0" VerticalAlignment="Top" Width="224" Fill="#33000000"/>
         <Rectangle x:Name="AlbumRect" HorizontalAlignment="Left" Height="224" Margin="11,110,0,0" VerticalAlignment="Top" Width="224" Visibility="Hidden"/>
@@ -77,6 +77,7 @@
             <ComboBoxItem Content="System"/>
             <ComboBoxItem Content="Dark"/>
             <ComboBoxItem Content="Light"/>
+            <ComboBoxItem Content="Black"/>
         </ComboBox>
         <Label Content="Theme:" HorizontalAlignment="Left" Margin="13,79,0,0" VerticalAlignment="Top" FontSize="10.5"/>
         <ScrollViewer Margin="248,365,14,121">

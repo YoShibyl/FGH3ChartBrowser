@@ -90,6 +90,9 @@ namespace FGH3ChartBrowser
             InitializeComponent();
 
             MainWin.Title += $" v{Assembly.GetExecutingAssembly().GetName().Version?.ToString(3)}";
+#if DEBUG
+            MainWin.Title += " [DEBUG]";
+#endif
             ScanProgressBar.Value = 0;
             RefreshSongInfo();
             totalSongs = 0;
@@ -1035,23 +1038,32 @@ namespace FGH3ChartBrowser
             }
         }
 
+        System.Windows.Media.Brush brushBlack = System.Windows.Media.Brushes.Black;
         private void ThemeSwitcher_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (ThemeSwitcher.SelectedIndex >= 0)
             {
                 switch (ThemeSwitcher.SelectedIndex)
                 {
-                    case 0:
+                    case 0:  // System theme
                         MainWin.ThemeMode = ThemeMode.System;
                         themeMode = ThemeMode.System;
+                        MainWin.Background = null;
                         break;
-                    case 1:
+                    case 1:  // Dark theme
                         MainWin.ThemeMode = ThemeMode.Dark;
                         themeMode = ThemeMode.Dark;
+                        MainWin.Background = null;
                         break;
-                    case 2:
+                    case 2:  // Light theme
                         MainWin.ThemeMode = ThemeMode.Light;
                         themeMode = ThemeMode.Light;
+                        MainWin.Background = null;
+                        break;
+                    case 3:  // Black theme
+                        MainWin.ThemeMode = ThemeMode.Dark;
+                        themeMode = ThemeMode.Dark;
+                        MainWin.Background = brushBlack;
                         break;
                 }
                 if (SongsDataGrid.SelectedItem != null)
@@ -1098,6 +1110,7 @@ namespace FGH3ChartBrowser
             if (settingsDialog != null) { settingsDialog.Close(); }
             settingsDialog = new SettingsDialog();
             settingsDialog.ThemeMode = this.ThemeMode;
+            settingsDialog.Background = this.Background;
             settingsDialog.Show();
         }
 
