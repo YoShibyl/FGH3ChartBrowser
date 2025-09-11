@@ -19,35 +19,35 @@
         </ComboBox>
         <Label Content="Controller index:" HorizontalAlignment="Left" Margin="10,17,0,0" VerticalAlignment="Top" Height="20" Width="115"/>
         <TextBlock HorizontalAlignment="Left" Margin="229,10,0,0" TextWrapping="Wrap" Text="Change this if your Xinput-enabled guitar isn't the only controller connected / isn't controlling the interface." VerticalAlignment="Top" Height="60" Width="174" FontSize="10"/>
-        <CheckBox x:Name="AutoScanChk" Content="Auto scan songs on startup" Margin="10,77,0,0" VerticalAlignment="Top" Unchecked="AutoScanChk_Checked" Checked="AutoScanChk_Checked" Height="32" Width="278"/>
-        <Label Content="Controls:" HorizontalAlignment="Left" Margin="10,114,0,0" VerticalAlignment="Top" FontSize="21" Height="32" Width="82"/>
-        <Rectangle HorizontalAlignment="Left" Height="50" Margin="10,142,0,0" VerticalAlignment="Top" Width="60">
+        <CheckBox x:Name="AutoScanChk" Content="Auto scan songs on startup" Margin="10,49,0,0" VerticalAlignment="Top" Unchecked="AutoScanChk_Checked" Checked="AutoScanChk_Checked" Height="32" Width="214"/>
+        <Label Content="Controls:" HorizontalAlignment="Left" Margin="10,119,0,0" VerticalAlignment="Top" FontSize="21" Height="32" Width="82"/>
+        <Rectangle HorizontalAlignment="Left" Height="50" Margin="10,147,0,0" VerticalAlignment="Top" Width="60">
             <Rectangle.Fill>
                 <ImageBrush ImageSource="/GHStrumBar.png" Stretch="Uniform"/>
             </Rectangle.Fill>
         </Rectangle>
-        <Label Content="Scroll through song list" HorizontalAlignment="Left" Margin="75,157,0,0" VerticalAlignment="Top" Height="24" Width="335"/>
-        <Rectangle HorizontalAlignment="Left" Height="50" Margin="10,197,0,0" VerticalAlignment="Top" Width="50">
+        <Label Content="Scroll through song list" HorizontalAlignment="Left" Margin="75,162,0,0" VerticalAlignment="Top" Height="24" Width="335"/>
+        <Rectangle HorizontalAlignment="Left" Height="50" Margin="10,202,0,0" VerticalAlignment="Top" Width="50">
             <Rectangle.Fill>
                 <ImageBrush ImageSource="/GHStartButton.png" Stretch="Uniform"/>
             </Rectangle.Fill>
         </Rectangle>
-        <Label Content="Play selected song" HorizontalAlignment="Left" Margin="65,212,0,0" VerticalAlignment="Top" Height="35" Width="345"/>
-        <Rectangle HorizontalAlignment="Left" Height="38" Margin="241,148,0,0" VerticalAlignment="Top" Width="25">
+        <Label Content="Play selected song" HorizontalAlignment="Left" Margin="65,217,0,0" VerticalAlignment="Top" Height="35" Width="345"/>
+        <Rectangle HorizontalAlignment="Left" Height="38" Margin="241,153,0,0" VerticalAlignment="Top" Width="25">
             <Rectangle.Fill>
                 <ImageBrush ImageSource="/GHFretOrange.png" Stretch="Uniform"/>
             </Rectangle.Fill>
         </Rectangle>
-        <Label Content="(Orange)" HorizontalAlignment="Left" Margin="236,129,0,0" VerticalAlignment="Top" FontSize="9" Height="16" Width="35"/>
-        <Label Content="Hold to scroll more" HorizontalAlignment="Left" Margin="271,157,0,0" VerticalAlignment="Top" Height="35" Width="139"/>
+        <Label Content="(Orange)" HorizontalAlignment="Left" Margin="236,134,0,0" VerticalAlignment="Top" FontSize="9" Height="16" Width="35"/>
+        <Label Content="Hold to scroll more" HorizontalAlignment="Left" Margin="271,162,0,0" VerticalAlignment="Top" Height="35" Width="139"/>
 
-        <Rectangle Height="38" Margin="205,203,0,0" VerticalAlignment="Top" Width="25" HorizontalAlignment="Left">
+        <Rectangle Height="38" Margin="205,208,0,0" VerticalAlignment="Top" Width="25" HorizontalAlignment="Left">
             <Rectangle.Fill>
                 <ImageBrush ImageSource="/GHFretBlue.png" Stretch="Uniform"/>
             </Rectangle.Fill>
         </Rectangle>
-        <Label Content="(Blue)" VerticalAlignment="Top" FontSize="9" Margin="206,186,0,0" HorizontalAlignment="Left" Height="16" Width="23"/>
-        <Label Content="Focus on filter/search bar" HorizontalAlignment="Left" Margin="238,212,0,0" VerticalAlignment="Top" Height="45" Width="172"/>
+        <Label Content="(Blue)" VerticalAlignment="Top" FontSize="9" Margin="206,191,0,0" HorizontalAlignment="Left" Height="16" Width="23"/>
+        <Label Content="Focus on filter/search bar" HorizontalAlignment="Left" Margin="238,217,0,0" VerticalAlignment="Top" Height="45" Width="172"/>
         <Button x:Name="CancelBtn" Content="USERS CAN'T SEE THIS BUTTON" Margin="13,-81,0,0" VerticalAlignment="Top" Foreground="#FF797979" IsCancel="True" Click="CancelBtn_Click" IsTabStop="False" Height="29" Width="193"/>
 
         <Label Content="This tool was made by Yoshibyl (a.k.a. &quot;Yoshi&quot;)" HorizontalAlignment="Left" Margin="10,276,0,0" VerticalAlignment="Top" FontSize="11"/>

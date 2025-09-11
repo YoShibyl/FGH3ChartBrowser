@@ -5,7 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FGH3ChartBrowser"
         mc:Ignorable="d"
-        Title="Album Art" Height="620" Width="600" ResizeMode="NoResize">
+        Title="Album Art" Width="500" MinWidth="250" MinHeight="273"
+        Height="523" ScrollViewer.VerticalScrollBarVisibility="Disabled"
+        MouseWheel="AlbumViewWin_MouseWheel" ResizeMode="NoResize" MaxWidth="2000" MaxHeight="2023"
+        ManipulationStarting="AlbumViewWin_ManipulationStarting"
+        ManipulationDelta="AlbumViewWin_ManipulationDelta"
+        ManipulationCompleted="AlbumViewWin_ManipulationCompleted">
     <Grid x:Name="AlbumGrid" ScrollViewer.VerticalScrollBarVisibility="Disabled">
         <Rectangle x:Name="BigAlbum" Grid.RowSpan="2" Grid.ColumnSpan="2">
             <Rectangle.Fill>
